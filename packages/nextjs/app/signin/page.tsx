@@ -3,23 +3,30 @@ import {Header} from '../../components/Header'
 import SignInForm from '../../components/SignInForm'
 import { useState } from 'react';
 import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
+import { useRouter } from 'next/navigation';
 
 const appAddress = "0x9A33eF90660321a8aeAfDca271d594d5b052E2DE";
 const kintoSDK = createKintoSDK(appAddress);
 
 export default function SignIn() {
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();
+  const router = useRouter();
 
   const handleClick = async () => {
     console.log('Button clicked');
-    kintoSDK.createNewWallet()
-      .then(async(accountInfo) => {
-        // console.log('Connected account info:', await kintoSDK.connect());
-        // setAccountInfo(accountInfo);
-      })
-      .catch((error) => {
-        console.error('Failed to connect:', error);
-      });
+    try {
+      await kintoSDK.createNewWallet();
+      const newAccountInfo = await kintoSDK.connect();
+      console.log('Connected account info:', newAccountInfo);
+      setAccountInfo(newAccountInfo);
+      
+      const encodedAccountInfo = encodeURIComponent(JSON.stringify(newAccountInfo.walletAddress));
+      const url=`/wallet?accountInfo=${encodedAccountInfo}`
+      console.log('Redirecting to:', url);
+      router.push(url);
+    } catch (error) {
+      console.error('Failed to connect:', error);
+    }
   };
 
   return (

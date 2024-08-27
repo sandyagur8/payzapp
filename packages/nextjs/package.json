@@ -2,18 +2,20 @@
   "name": "@se-2/nextjs",
   "private": true,
   "version": "0.1.0",
-  "scripts": {
-    "dev": "next dev",
-    "start": "next dev",
-    "build": "next build",
-    "serve": "next start",
-    "lint": "next lint",
-    "format": "prettier --write . '!(node_modules|.next|contracts)/**/*'",
-    "check-types": "tsc --noEmit --incremental",
-    "vercel": "vercel",
-    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
-  },
-  "dependencies": {
+"scripts": {
+  "dev": "next dev",
+  "dev:https": "ts-node --project tsconfig.server.json server.ts",
+  "start": "next start",
+  "start:https": "NODE_ENV=production ts-node --project tsconfig.server.json server.ts",
+  "build": "next build",
+  "serve": "next start",
+  "lint": "next lint",
+  "format": "prettier --write . '!(node_modules|.next|contracts)/**/*'",
+  "check-types": "tsc --noEmit --incremental",
+  "vercel": "vercel",
+  "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
+}
+,  "dependencies": {
     "@heroicons/react": "^2.0.11",
     "@rainbow-me/rainbowkit": "2.1.2",
     "@tanstack/react-query": "^5.28.6",
