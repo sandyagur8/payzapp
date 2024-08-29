@@ -56,5 +56,5 @@ export default function Wallet() {
   if (!accountInfo || isLoading) {
     return <div>Loading...</div>;
   }
-  return isMerchant ? <MerchantWalletContent  /> : <WalletContent wallet_connect={accountInfo } />;
+  return isMerchant ? <MerchantWalletContent wallet_connect={accountInfo }  /> : <WalletContent wallet_connect={accountInfo } />;
 }

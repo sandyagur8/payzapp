@@ -22,29 +22,34 @@ export default function SignUpForm() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-
+  
     if (!name.trim()) {
       setError('Name is required');
       return;
     }
-
+  
     if (!validateEmail(email)) {
       setError('Please enter a valid Gmail address');
       return;
     }
-
+  
     if (!validatePhone(phone)) {
       setError('Please enter a valid 10-digit phone number');
       return;
     }
-
-    // If all validations pass, you would typically send the data to your backend here
+  
+  
     console.log('Form data:', { name, email, phone, isMerchant });
-
-    // Redirect to OTP verification page
-    router.push('/verify-otp');
+  
+    const query = new URLSearchParams({
+      name,
+      email,
+      phone,
+      isMerchant: isMerchant.toString(),
+    }).toString();
+  
+    router.push(`/verify-otp?${query}`);
   };
-
   return (
     <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-semibold mb-4">Sign Up</h2>

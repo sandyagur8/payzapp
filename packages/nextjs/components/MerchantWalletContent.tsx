@@ -1,15 +1,47 @@
 'use client'
 
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import SendModal from './SendModal';
 import TransactionHistory from './TransactionHistory';
+import { user_props,Transaction } from '~~/app/lib/interfaces';
 
-export default function MerchantWalletContent() {
+interface WalletContentProps {
+  wallet_connect: user_props;
+}
+
+  const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isXmtpAlertsOpen, setIsXmtpAlertsOpen] = useState(false);
-  const [balance, setBalance] = useState(10000); // Example balance
-  const walletAddress = 'merchant-wallet-address-here'; // Replace with actual wallet address
+  const [balance, setBalance] = useState(0); // Example balance
+  const walletAddress = wallet_connect.walletAddress // Replace with actual wallet address
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+
+  useEffect(() => {
+    const fetchWalletData = async () => {
+      try {
+        const balanceResponse = await fetch(`/api/wallet/balance?walletAddres=${wallet_connect.walletAddress}`);
+        if (!balanceResponse.ok) throw new Error('Failed to fetch balance');
+        const balanceData = await balanceResponse.json();
+        setBalance(balanceData.balance);
+
+        const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
+        if (!historyResponse.ok) throw new Error('Failed to fetch transaction history');
+        const historyData = await historyResponse.json();
+        console.log({historyData})
+        setTransactions(historyData.transactions);
+      } catch (error) {
+        console.error('Error fetching wallet data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWalletData();
+  }, [wallet_connect.walletAddress]);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -40,7 +72,7 @@ export default function MerchantWalletContent() {
           </button>
         </div>
 
-        <TransactionHistory />
+        <TransactionHistory transactions={transactions} />
 
         <div className="flex space-x-4 mt-6">
           <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
@@ -95,3 +127,5 @@ function XmtpAlertsModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+export default MerchantWalletContent;
