@@ -2,20 +2,31 @@
 
 import { useState, useEffect } from 'react';
 // import Header from './Header';
-
-export default function OfflineTransactionInstructionsContent() {
+interface sentProps{
+  amount:number,
+  phonenumber:string
+}
+const OfflineTransactionInstructionsContent: React.FC<sentProps> = ({ amount, phonenumber }) => {
   const [transactionCode, setTransactionCode] = useState('');
 
   useEffect(() => {
     // Generate a random transaction code
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const code = `C8D7M 2 ${phonenumber} ${amount}`
+
     setTransactionCode(code);
-  }, []);
+  }, [amount,phonenumber]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(transactionCode);
     alert('Transaction code copied to clipboard!');
   };
+
+  const copyPhoneToCLipboard=()=>{
+    navigator.clipboard.writeText("+919220592205");
+    alert('Phone Number copied to clipboard!');
+  }
+  
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -40,9 +51,12 @@ export default function OfflineTransactionInstructionsContent() {
               To complete your offline transaction, please follow these steps:
               <ol className="list-decimal list-inside mt-2">
                 <li>Copy the transaction code above.</li>
-                <li>Send an SMS with the following format to +91XXXXXXXXXX:</li>
-                <li className="ml-4">SEND [Transaction Code] [Amount]</li>
-                <li>For example: SEND {transactionCode} 100</li>
+                <li>Send an SMS with the code to <button
+                onClick={copyPhoneToCLipboard}
+                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+              >
+                +919220592205
+              </button> </li>
                 <li>Wait for a confirmation SMS to complete the transaction.</li>
               </ol>
             </p>
@@ -58,3 +72,4 @@ export default function OfflineTransactionInstructionsContent() {
     </div>
   );
 }
+export default OfflineTransactionInstructionsContent;

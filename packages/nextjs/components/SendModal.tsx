@@ -30,7 +30,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isOffline&&phoneNumber&&amount) {
-      router.push(`/offline-transaction-instructions?phoneNumber=${phoneNumber}&amount=${amount}`);
+      router.push(`/offlineTransaction?phoneNumber=${phoneNumber}&amount=${amount}`);
     } else {
       // Handle online transaction
       const response = walletAddress.slice(0,2)=='0x' ? await fetch(`/api/user/get?walletAddress=${walletAddress}`) : await fetch(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
