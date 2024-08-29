@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import WalletContent from '../../components/WalletContent';
 import MerchantWalletContent from '../../components/MerchantWalletContent';
 import { useSearchParams } from 'next/navigation';
-import { KintoAccountInfo } from 'kinto-web-sdk';
 import { user_props } from '../lib/interfaces';
-
 export default function Wallet() {
   const [isMerchant, setIsMerchant] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

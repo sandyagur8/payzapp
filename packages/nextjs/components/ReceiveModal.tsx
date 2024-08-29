@@ -3,11 +3,16 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
-export default function ReceiveModal({ onClose }: { onClose: () => void }) {
-  const [amount, setAmount] = useState('');
-  const walletAddress = 'your-wallet-address-here'; // Replace with actual wallet address
+interface ReceiveModalProps {
+  onClose: () => void;
+  walletAddress: string;
+}
 
-  const qrData = amount ? `${walletAddress}?amount=${amount}` : walletAddress;
+export default function ReceiveModal({ onClose, walletAddress }: ReceiveModalProps) {
+  const [amount, setAmount] = useState('');
+
+  // const qrData = amount ? `${walletAddress}?amount=${amount}` : walletAddress;
+  const qrData = walletAddress
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">

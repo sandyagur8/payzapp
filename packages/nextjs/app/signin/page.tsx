@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation';
 
 
 export default function SignIn() {
-  const appAddress = process.env.KINTO_APP_ADDRESS;
+  const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
   if (!appAddress) {
-    throw new Error('KINTO_APP_ADDRESS is not defined');
+    throw new Error('NEXT_PUBLIC_KINTO_APP_ADDRESS is not defined');
   }
   const kintoSDK = createKintoSDK(appAddress);
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();

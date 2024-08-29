@@ -5,13 +5,8 @@ import SendModal from './SendModal';
 import ReceiveModal from './ReceiveModal';
 import TransactionHistory from './TransactionHistory';
 import { user_props } from '~~/app/lib/interfaces';
-// import { createKintoSDK,KintoAccountInfo } from 'kinto-web-sdk';
+import { Transaction } from '~~/app/lib/interfaces';
 
-// const appAddress = process.env.KINTO_APP_ADDRESS;
-// if (!appAddress) {
-//   throw new Error('KINTO_APP_ADDRESS is not defined');
-// }
-// const kintoSDK = createKintoSDK(appAddress);
 
 interface WalletContentProps {
   wallet_connect: user_props;
@@ -22,18 +17,8 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // const [accountInfo, setaccountInfo] = useState<KintoAccountInfo |null>(null);
-
-  // kintoSDK.connect()
-  // .then((accountInfo) => {
-  //   console.log('Connected account info:', accountInfo);
-  //   setaccountInfo(accountInfo)
-  // })
-  // .catch((error) => {
-  //   console.error('Failed to connect:', error);
-  // });
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -43,7 +28,6 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         const balanceData = await balanceResponse.json();
         setBalance(balanceData.balance);
 
-        // Fetch transaction history
         const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
         if (!historyResponse.ok) throw new Error('Failed to fetch transaction history');
         const historyData = await historyResponse.json();
@@ -51,7 +35,6 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         setTransactions(historyData.transactions);
       } catch (error) {
         console.error('Error fetching wallet data:', error);
-        // Handle error (e.g., show error message to user)
       } finally {
         setIsLoading(false);
       }
@@ -78,7 +61,7 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
           <p className="text-3xl font-bold text-green-600">
-            ${balance !== null ? balance.toFixed(2) : 'N/A'}
+            ${balance !== null ? balance.toFixed(2) : '00.00'}
           </p>
         </div>
         <div className="flex space-x-4 mb-6">
@@ -101,7 +84,7 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         <SendModal onClose={() => setIsSendModalOpen(false)} />
       )}
       {isReceiveModalOpen && (
-        <ReceiveModal onClose={() => setIsReceiveModalOpen(false)} />
+        <ReceiveModal walletAddress = {wallet_connect.walletAddress} onClose={() => setIsReceiveModalOpen(false)}  />
       )}
     </div>
   );

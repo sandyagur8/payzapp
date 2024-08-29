@@ -4,7 +4,7 @@ import { kinto } from "./../../../../app/lib/utils";
 import { USDC_ABI } from "./../../../../app/lib/utils";
 import { formatUnits } from 'viem'
 
-const USDCAddress = process.env.USDC_ADDRESS;
+const USDCAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
 
 async function getBalance(accountAddress: string) {
     const client = createPublicClient({
