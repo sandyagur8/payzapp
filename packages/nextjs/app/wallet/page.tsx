@@ -5,12 +5,12 @@ import WalletContent from '../../components/WalletContent';
 import MerchantWalletContent from '../../components/MerchantWalletContent';
 import { useSearchParams } from 'next/navigation';
 import { KintoAccountInfo } from 'kinto-web-sdk';
-
+import { user_props } from '../lib/interfaces';
 
 export default function Wallet() {
   const [isMerchant, setIsMerchant] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [accountInfo, setAccountInfo] = useState<KintoAccountInfo >();
+  const [accountInfo, setAccountInfo] = useState<user_props|null>(null);
   const searchParams = useSearchParams();
   
   useEffect(() => {  
@@ -27,17 +27,17 @@ export default function Wallet() {
         if (encodedAccountInfo) {
           try {
             const decodedAccountInfo = JSON.parse(decodeURIComponent(encodedAccountInfo));
-            setAccountInfo(decodedAccountInfo);
-            console.log(decodedAccountInfo);
-            const response = await fetch(`/api/user/type?walletAddress=${decodedAccountInfo}`);
+            // console.log(decodedAccountInfo);
+            const response = await fetch(`/api/user/get?walletAddress=${decodedAccountInfo}`);
             console.log({response})
-    
+            
             if (!response.ok) {
               throw new Error('Failed to fetch user type');
             }
-    
+            
             const data = await response.json();
             setIsMerchant(await isMerchant(data));
+            setAccountInfo(data);
           } catch (error) {
             console.error('Failed to parse account info or fetch user type:', error);
           }
@@ -58,5 +58,5 @@ export default function Wallet() {
   if (!accountInfo || isLoading) {
     return <div>Loading...</div>;
   }
-  return isMerchant ? <MerchantWalletContent /> : <WalletContent />;
+  return isMerchant ? <MerchantWalletContent  /> : <WalletContent wallet_connect={accountInfo } />;
 }

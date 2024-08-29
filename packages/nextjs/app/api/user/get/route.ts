@@ -28,12 +28,13 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    const { email: userEmail, wallet_address, phone_number, is_merchant } = data;
+    const { email: userEmail, wallet_address, phone_number, is_merchant,name} = data;
     return NextResponse.json({ 
       email: userEmail, 
       walletAddress: wallet_address, 
       phoneNumber: phone_number, 
-      isMerchant: is_merchant 
+      isMerchant: is_merchant,
+      name:name
     }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user:', error);

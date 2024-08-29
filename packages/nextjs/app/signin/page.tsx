@@ -5,10 +5,13 @@ import { useState } from 'react';
 import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
 import { useRouter } from 'next/navigation';
 
-const appAddress = "0x9A33eF90660321a8aeAfDca271d594d5b052E2DE";
-const kintoSDK = createKintoSDK(appAddress);
 
 export default function SignIn() {
+  const appAddress = process.env.KINTO_APP_ADDRESS;
+  if (!appAddress) {
+    throw new Error('KINTO_APP_ADDRESS is not defined');
+  }
+  const kintoSDK = createKintoSDK(appAddress);
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();
   const router = useRouter();
 
