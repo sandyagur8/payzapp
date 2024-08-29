@@ -3,6 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { createKintoSDK } from 'kinto-web-sdk';
+import { Address, encodeFunctionData, parseEther } from 'viem';
+import { USDC_ABI } from '~~/app/lib/utils';
+import { user_props } from '~~/app/lib/interfaces';
+const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
+if (!appAddress) {
+  throw new Error('KINTO_APP_ADDRESS is not defined');
+}
+
+const kintoSDK = createKintoSDK(appAddress);
 
 const QrScanner = dynamic(() => import('react-qr-scanner'), { ssr: false });
 
@@ -13,13 +23,33 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
   const [walletAddress, setWalletAddress] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const router = useRouter();
-
-  const handleSubmit = (e: React.FormEvent) => {
+  if (!process.env.NEXT_PUBLIC_USDC_ADDRESS) {
+    throw new Error('USDC_ADDRESS is not defined');
+  }
+  const USDC_ADDRESS =process.env.NEXT_PUBLIC_USDC_ADDRESS
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isOffline) {
-      router.push('/offline-transaction-instructions');
+    if (isOffline&&phoneNumber&&amount) {
+      router.push(`/offline-transaction-instructions?phoneNumber=${phoneNumber}&amount=${amount}`);
     } else {
       // Handle online transaction
+      const response = walletAddress.slice(0,2)=='0x' ? await fetch(`/api/user/get?walletAddress=${walletAddress}`) : await fetch(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
+      const userdata:user_props = await response.json()
+      const data = encodeFunctionData({
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [userdata.walletAddress,parseEther(amount)]
+      });
+      await kintoSDK.connect()
+
+
+      kintoSDK.sendTransaction([{to:`0x${USDC_ADDRESS.slice(2)}`,data,value:BigInt(0)}]).then((hash) => {
+        console.log('Transaction successful, hash:', hash);
+      })
+      .catch((error) => {
+        console.error('Transaction failed:', error);
+      });
+      
       console.log('Online transaction:', { walletAddress, amount });
       onClose();
     }
