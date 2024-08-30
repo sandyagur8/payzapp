@@ -2,7 +2,8 @@
 import { useState, useEffect ,useRef} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
-
+import {encodeFunctionData,parseEther} from "viem"
+import { USDC_ABI } from '../lib/utils';
 export default function VerifyOTP() {
   const [otp, setOtp] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -10,7 +11,12 @@ export default function VerifyOTP() {
   const searchParams = useSearchParams();
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();
   const effectRan = useRef(false);
-  
+  const DISPATCHER_ADDRESS= process.env.NEXT_PUBLIC_DISPATCHER_ADDRESS
+  if(!DISPATCHER_ADDRESS)
+    throw new Error("No Dispatcher address set")
+  const USDC_ADDRESS=process.env.NEXT_PUBLIC_USDC_ADDRESS
+  if(!USDC_ADDRESS)
+    throw new Error("No USDC address set")
   const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS
   if(!appAddress)
     throw new Error("KINTO APP ADDRESS IS NOT SET")
@@ -90,8 +96,15 @@ export default function VerifyOTP() {
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = async() => {
+    const data = encodeFunctionData({
+      abi: USDC_ABI,
+      functionName: 'approve',
+      args: [DISPATCHER_ADDRESS,parseEther("10000")]
+    });
+    await kintoSDK.sendTransaction([{to:`0x${USDC_ADDRESS.slice(2)}`,data,value:BigInt(0)}])
     setShowSuccessModal(false);
+    
     if (accountInfo?.walletAddress) {
       router.push(`/wallet?accountInfo="${accountInfo.walletAddress}"`);
     } else {
@@ -151,7 +164,7 @@ export default function VerifyOTP() {
               onClick={handleCloseModal}
               className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
-              Go to Wallet
+              Approve Wallet and goto profile
             </button>
           </div>
         </div>
