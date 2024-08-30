@@ -16,11 +16,15 @@
     "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.2",
+    "react-qr-scanner": "^1.0.0-alpha.11",
     "@heroicons/react": "^2.0.11",
+    "kinto-web-sdk": "^1.0.2",
     "@rainbow-me/rainbowkit": "2.1.2",
     "@tanstack/react-query": "^5.28.6",
     "@uniswap/sdk-core": "^4.0.1",
     "@uniswap/v2-sdk": "^3.0.1",
+    "@ducanh2912/next-pwa": "^10.2.8",
     "blo": "^1.0.1",
     "burner-connector": "^0.0.8",
     "daisyui": "4.5.0",

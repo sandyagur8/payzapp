@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { USDC_ABI } from "../lib/utils";
 import { KintoAccountInfo, createKintoSDK } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
+import Loading from "~~/components/loading_content";
 
-export default function VerifyOTP() {
+function VerifyOTPContent() {
   const [otp, setOtp] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const router = useRouter();
@@ -62,31 +63,37 @@ export default function VerifyOTP() {
       }
       const data = await response.json();
       if (data.isVerified) {
-        await kintoSDK.createNewWallet();
-        const newAccountInfo = await kintoSDK.connect();
-        setAccountInfo(newAccountInfo);
-        console.log({ newAccountInfo });
-        if (newAccountInfo) {
-          const userData = {
-            email: searchParams.get("email"),
-            name: `91${searchParams.get("name")}`,
-            phoneNumber: searchParams.get("phone"),
-            isMerchant: searchParams.get("isMerchant"),
-            walletAddress: newAccountInfo.walletAddress,
-          };
-          console.log({ userData });
-          const createResponse = await fetch("/api/user/create", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
-          });
-          console.log({ createResponse });
-          if (!createResponse.ok) {
-            throw new Error("Failed to create user");
+        try {
+          await kintoSDK.createNewWallet();
+          console.log("auth complete");
+
+          const newAccountInfo = await kintoSDK.connect();
+          setAccountInfo(newAccountInfo);
+          console.log({ newAccountInfo });
+          if (newAccountInfo) {
+            const userData = {
+              email: searchParams.get("email"),
+              name: searchParams.get("name"),
+              phoneNumber: `91${searchParams.get("phone")}`,
+              isMerchant: searchParams.get("isMerchant"),
+              walletAddress: newAccountInfo.walletAddress,
+            };
+            console.log({ userData });
+            const createResponse = await fetch("/api/user/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(userData),
+            });
+            console.log({ createResponse });
+            if (!createResponse.ok) {
+              throw new Error("Failed to create user");
+            }
+            setShowSuccessModal(true);
           }
-          setShowSuccessModal(true);
+        } catch (e) {
+          console.log("error on auth is ", e);
         }
       } else {
         throw new Error("Verification failed");
@@ -169,5 +176,13 @@ export default function VerifyOTP() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function VerifyOTP() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <VerifyOTPContent />
+    </Suspense>
   );
 }

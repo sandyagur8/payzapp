@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "~~/app/lib/supabase";
 
+export const runtime = "edge";
+
 type VerifyResponse = {
   success: boolean;
   message: string;

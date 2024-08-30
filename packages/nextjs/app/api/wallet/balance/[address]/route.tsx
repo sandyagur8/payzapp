@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kinto } from "./../../../../app/lib/utils";
-import { USDC_ABI } from "./../../../../app/lib/utils";
+import { kinto } from "../../../../lib/utils";
+import { USDC_ABI } from "../../../../lib/utils";
 import { Address, createPublicClient, http } from "viem";
 import { formatUnits } from "viem";
 
@@ -21,10 +21,10 @@ async function getBalance(accountAddress: string) {
   return balance;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: { address: string } }) {
   try {
-    const { searchParams } = new URL(request.url);
-    const walletAddress = searchParams.get("walletAddress");
+    // const { searchParams } = new URL(request.url);
+    const walletAddress = params.address;
 
     if (!walletAddress) {
       return NextResponse.json({ error: "Wallet address is required" }, { status: 400 });

@@ -1,19 +1,18 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react';
-import SendModal from './SendModal';
-import ReceiveModal from './ReceiveModal';
-import TransactionHistory from './TransactionHistory';
-import { user_props } from '~~/app/lib/interfaces';
-import { Transaction } from '~~/app/lib/interfaces';
-
+import { Suspense, useEffect, useState } from "react";
+import ReceiveModal from "./ReceiveModal";
+import SendModal from "./SendModal";
+import TransactionHistory from "./TransactionHistory";
+import Loading from "./loading_content";
+import { user_props } from "~~/app/lib/interfaces";
+import { Transaction } from "~~/app/lib/interfaces";
 
 interface WalletContentProps {
   wallet_connect: user_props;
 }
 
-const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
-
+function WalletContentInner({ wallet_connect }: WalletContentProps) {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
@@ -23,18 +22,18 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        const balanceResponse = await fetch(`/api/wallet/balance?walletAddres=${wallet_connect.walletAddress}`);
-        if (!balanceResponse.ok) throw new Error('Failed to fetch balance');
+        const balanceResponse = await fetch(`/api/wallet/balance/${wallet_connect.walletAddress}`);
+        if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
         const balanceData = await balanceResponse.json();
         setBalance(balanceData.balance);
 
         const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
-        if (!historyResponse.ok) throw new Error('Failed to fetch transaction history');
+        if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
         const historyData = await historyResponse.json();
-        console.log({historyData})
+        console.log({ historyData });
         setTransactions(historyData.transactions);
       } catch (error) {
-        console.error('Error fetching wallet data:', error);
+        console.error("Error fetching wallet data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -44,14 +43,7 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   }, [wallet_connect.walletAddress]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-xl font-semibold">Loading wallet data...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
@@ -60,9 +52,7 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         <h1 className="text-2xl font-bold mb-4">Welcome, {wallet_connect.name}</h1>
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
-          <p className="text-3xl font-bold text-green-600">
-            ${balance !== null ? balance.toFixed(2) : '00.00'}
-          </p>
+          <p className="text-3xl font-bold text-green-600">${balance !== null ? balance.toFixed(2) : "00.00"}</p>
         </div>
         <div className="flex space-x-4 mb-6">
           <button
@@ -80,14 +70,20 @@ const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
         </div>
         <TransactionHistory transactions={transactions} />
       </main>
-      {isSendModalOpen && (
-        <SendModal onClose={() => setIsSendModalOpen(false)} />
-      )}
+      {isSendModalOpen && <SendModal onClose={() => setIsSendModalOpen(false)} />}
       {isReceiveModalOpen && (
-        <ReceiveModal walletAddress = {wallet_connect.walletAddress} onClose={() => setIsReceiveModalOpen(false)}  />
+        <ReceiveModal walletAddress={wallet_connect.walletAddress} onClose={() => setIsReceiveModalOpen(false)} />
       )}
     </div>
   );
 }
+
+const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <WalletContentInner wallet_connect={wallet_connect} />
+    </Suspense>
+  );
+};
 
 export default WalletContent;
