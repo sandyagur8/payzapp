@@ -1,56 +1,61 @@
-'use client'
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { createKintoSDK } from 'kinto-web-sdk';
-import { Address, encodeFunctionData, parseEther } from 'viem';
-import { USDC_ABI } from '~~/app/lib/utils';
-import { user_props } from '~~/app/lib/interfaces';
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { createKintoSDK } from "kinto-web-sdk";
+import { encodeFunctionData, parseEther } from "viem";
+import { user_props } from "~~/app/lib/interfaces";
+import { USDC_ABI } from "~~/app/lib/utils";
+
 const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
 if (!appAddress) {
-  throw new Error('KINTO_APP_ADDRESS is not defined');
+  throw new Error("KINTO_APP_ADDRESS is not defined");
 }
 
 const kintoSDK = createKintoSDK(appAddress);
 
-const QrScanner = dynamic(() => import('react-qr-scanner'), { ssr: false });
+const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
 export default function SendModal({ onClose }: { onClose: () => void }) {
   const [isOffline, setIsOffline] = useState(true);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [amount, setAmount] = useState('');
-  const [walletAddress, setWalletAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [amount, setAmount] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const router = useRouter();
   if (!process.env.NEXT_PUBLIC_USDC_ADDRESS) {
-    throw new Error('USDC_ADDRESS is not defined');
+    throw new Error("USDC_ADDRESS is not defined");
   }
-  const USDC_ADDRESS =process.env.NEXT_PUBLIC_USDC_ADDRESS
+  const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isOffline&&phoneNumber&&amount) {
+    if (isOffline && phoneNumber && amount) {
       router.push(`/offlineTransaction?phoneNumber=${phoneNumber}&amount=${amount}`);
     } else {
       // Handle online transaction
-      const response = walletAddress.slice(0,2)=='0x' ? await fetch(`/api/user/get?walletAddress=${walletAddress}`) : await fetch(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
-      const userdata:user_props = await response.json()
+      const response =
+        walletAddress.slice(0, 2) == "0x"
+          ? await fetch(`/api/user/get?walletAddress=${walletAddress}`)
+          : await fetch(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
+      const userdata: user_props = await response.json();
       const data = encodeFunctionData({
         abi: USDC_ABI,
-        functionName: 'transfer',
-        args: [userdata.walletAddress,parseEther(amount)]
+        functionName: "transfer",
+        args: [userdata.walletAddress, parseEther(amount)],
       });
-      await kintoSDK.connect()
+      await kintoSDK.connect();
 
+      kintoSDK
+        .sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
+        .then(hash => {
+          console.log("Transaction successful, hash:", hash);
+        })
+        .catch(error => {
+          console.error("Transaction failed:", error);
+        });
 
-      kintoSDK.sendTransaction([{to:`0x${USDC_ADDRESS.slice(2)}`,data,value:BigInt(0)}]).then((hash) => {
-        console.log('Transaction successful, hash:', hash);
-      })
-      .catch((error) => {
-        console.error('Transaction failed:', error);
-      });
-      
-      console.log('Online transaction:', { walletAddress, amount });
+      console.log("Online transaction:", { walletAddress, amount });
       onClose();
     }
   };
@@ -79,22 +84,19 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                 checked={isOffline}
                 onChange={() => setIsOffline(!isOffline)}
               />
-              <div className={`block w-14 h-8 rounded-full ${isOffline ? 'bg-blue-400' : 'bg-gray-300'}`}></div>
-              <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${isOffline ? '' : 'transform translate-x-6'}`}></div>
+              <div className={`block w-14 h-8 rounded-full ${isOffline ? "bg-blue-400" : "bg-gray-300"}`}></div>
+              <div
+                className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${
+                  isOffline ? "" : "transform translate-x-6"
+                }`}
+              ></div>
             </div>
-            <div className="ml-3 text-gray-700 font-medium">
-              {isOffline ? 'Offline Payment' : 'Online Payment'}
-            </div>
+            <div className="ml-3 text-gray-700 font-medium">{isOffline ? "Offline Payment" : "Online Payment"}</div>
           </label>
         </div>
         {showScanner ? (
           <div className="mb-4">
-            <QrScanner
-              delay={300}
-              onError={handleError}
-              onScan={handleScan}
-              style={{ width: '100%' }}
-            />
+            <QrScanner delay={300} onError={handleError} onScan={handleScan} style={{ width: "100%" }} />
             <button
               onClick={() => setShowScanner(false)}
               className="mt-2 w-full bg-red-600 text-white px-4 py-2 rounded"
@@ -110,7 +112,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                   type="tel"
                   placeholder="Phone Number"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={e => setPhoneNumber(e.target.value)}
                   className="w-full px-3 py-2 border rounded mb-4"
                   required
                 />
@@ -118,7 +120,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                   type="number"
                   placeholder="Amount"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={e => setAmount(e.target.value)}
                   className="w-full px-3 py-2 border rounded mb-4"
                   required
                 />
@@ -129,7 +131,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                   type="text"
                   placeholder="Wallet Address or Phone Number"
                   value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
+                  onChange={e => setWalletAddress(e.target.value)}
                   className="w-full px-3 py-2 border rounded mb-4"
                   required
                 />
@@ -137,7 +139,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                   type="number"
                   placeholder="Amount"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={e => setAmount(e.target.value)}
                   className="w-full px-3 py-2 border rounded mb-4"
                   required
                 />
@@ -155,7 +157,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
                 Cancel
               </button>
               <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
-                {isOffline ? 'Continue' : 'Send'}
+                {isOffline ? "Continue" : "Send"}
               </button>
             </div>
           </form>
