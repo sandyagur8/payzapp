@@ -1,0 +1,5 @@
+{
+  "headers": {
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/blockexplorer/layout,_N_T_/blockexplorer/transaction/layout,_N_T_/blockexplorer/transaction/[txHash]/layout,_N_T_/blockexplorer/transaction/[txHash]/page,_N_T_/blockexplorer/transaction/0x0000000000000000000000000000000000000000"
+  }
+}

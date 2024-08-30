@@ -1,0 +1,20 @@
+{
+  "/_not-found": "app/_not-found.js",
+  "/api/user/create/route": "app/api/user/create/route.js",
+  "/api/user/verify/route": "app/api/user/verify/route.js",
+  "/api/user/type/route": "app/api/user/type/route.js",
+  "/api/user/get/route": "app/api/user/get/route.js",
+  "/api/wallet/balance/route": "app/api/wallet/balance/route.js",
+  "/api/wallet/history/route": "app/api/wallet/history/route.js",
+  "/api/wallet/updateHistory/route": "app/api/wallet/updateHistory/route.js",
+  "/offlineTransaction/page": "app/offlineTransaction/page.js",
+  "/signin/page": "app/signin/page.js",
+  "/page": "app/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/verify-otp/page": "app/verify-otp/page.js",
+  "/wallet/page": "app/wallet/page.js",
+  "/debug/page": "app/debug/page.js",
+  "/blockexplorer/page": "app/blockexplorer/page.js",
+  "/blockexplorer/address/[address]/page": "app/blockexplorer/address/[address]/page.js",
+  "/blockexplorer/transaction/[txHash]/page": "app/blockexplorer/transaction/[txHash]/page.js"
+}
