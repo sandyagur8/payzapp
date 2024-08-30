@@ -1,3 +1,6 @@
 {
-  "installCommand": "yarn install"
+  "version": 2,
+  "buildCommand": "echo 'Using pre-built files'",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
 }

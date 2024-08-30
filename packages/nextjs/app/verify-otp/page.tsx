@@ -1,25 +1,24 @@
-'use client'
-import { useState, useEffect ,useRef} from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
-import {encodeFunctionData,parseEther} from "viem"
-import { USDC_ABI } from '../lib/utils';
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { USDC_ABI } from "../lib/utils";
+import { KintoAccountInfo, createKintoSDK } from "kinto-web-sdk";
+import { encodeFunctionData, parseEther } from "viem";
+
 export default function VerifyOTP() {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();
   const effectRan = useRef(false);
-  const DISPATCHER_ADDRESS= process.env.NEXT_PUBLIC_DISPATCHER_ADDRESS
-  if(!DISPATCHER_ADDRESS)
-    throw new Error("No Dispatcher address set")
-  const USDC_ADDRESS=process.env.NEXT_PUBLIC_USDC_ADDRESS
-  if(!USDC_ADDRESS)
-    throw new Error("No USDC address set")
-  const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS
-  if(!appAddress)
-    throw new Error("KINTO APP ADDRESS IS NOT SET")
+  const DISPATCHER_ADDRESS = process.env.NEXT_PUBLIC_DISPATCHER_ADDRESS;
+  if (!DISPATCHER_ADDRESS) throw new Error("No Dispatcher address set");
+  const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+  if (!USDC_ADDRESS) throw new Error("No USDC address set");
+  const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
+  if (!appAddress) throw new Error("KINTO APP ADDRESS IS NOT SET");
 
   const kintoSDK = createKintoSDK(appAddress);
 
@@ -27,10 +26,10 @@ export default function VerifyOTP() {
     if (effectRan.current === false) {
       const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
       setOtp(`C8D7M 1 ${randomOTP}`);
-      fetch(`/api/user/verify?otp=${randomOTP}&method=1&phoneNumber=${searchParams.get('phone')}`).then((response)=>{
+      fetch(`/api/user/verify?otp=${randomOTP}&method=1&number=91${searchParams.get("phone")}`).then(response => {
         if (!response.ok) {
           alert("There is some issue. Please restart the process");
-          router.push('/signup');
+          router.push("/signup");
         }
       });
 
@@ -42,18 +41,21 @@ export default function VerifyOTP() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(otp);
-    alert('OTP copied to clipboard!');
+    alert("OTP copied to clipboard!");
   };
 
   const copyPhoneToClipboard = () => {
     navigator.clipboard.writeText(`+919220592205`);
-    alert('Phone number copied to clipboard!');
+    alert("Phone number copied to clipboard!");
   };
 
   const handleVerify = async () => {
     try {
-      console.log(otp.split(" ")[2])
-      const response = await fetch(`/api/user/verify?otp=${otp.split(" ")[2]}&method=2`);
+      console.log(otp.split(" ")[2]);
+      console.log(searchParams.get("phone"));
+      const response = await fetch(
+        `/api/user/verify?otp=${otp.split(" ")[2]}&method=2&number=91${searchParams.get("phone")}`,
+      );
 
       if (!response.ok) {
         throw new Error("Verification failed");
@@ -63,24 +65,24 @@ export default function VerifyOTP() {
         await kintoSDK.createNewWallet();
         const newAccountInfo = await kintoSDK.connect();
         setAccountInfo(newAccountInfo);
-        console.log({newAccountInfo})
+        console.log({ newAccountInfo });
         if (newAccountInfo) {
           const userData = {
-            email: searchParams.get('email'),
-            name: searchParams.get('name'),
-            phoneNumber: searchParams.get('phone'),
-            isMerchant: searchParams.get('isMerchant'),
-            walletAddress: newAccountInfo.walletAddress   
+            email: searchParams.get("email"),
+            name: `91${searchParams.get("name")}`,
+            phoneNumber: searchParams.get("phone"),
+            isMerchant: searchParams.get("isMerchant"),
+            walletAddress: newAccountInfo.walletAddress,
           };
-          console.log({userData})
+          console.log({ userData });
           const createResponse = await fetch("/api/user/create", {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify(userData)
+            body: JSON.stringify(userData),
           });
-          console.log({createResponse})
+          console.log({ createResponse });
           if (!createResponse.ok) {
             throw new Error("Failed to create user");
           }
@@ -92,24 +94,24 @@ export default function VerifyOTP() {
     } catch (error) {
       console.error("Error during verification:", error);
       alert("There is some issue. Please restart the process");
-      router.push('/signup');
+      router.push("/signup");
     }
   };
 
-  const handleCloseModal = async() => {
+  const handleCloseModal = async () => {
     const data = encodeFunctionData({
       abi: USDC_ABI,
-      functionName: 'approve',
-      args: [DISPATCHER_ADDRESS,parseEther("10000")]
+      functionName: "approve",
+      args: [DISPATCHER_ADDRESS, parseEther("10000")],
     });
-    await kintoSDK.sendTransaction([{to:`0x${USDC_ADDRESS.slice(2)}`,data,value:BigInt(0)}])
+    await kintoSDK.sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }]);
     setShowSuccessModal(false);
-    
+
     if (accountInfo?.walletAddress) {
       router.push(`/wallet?accountInfo="${accountInfo.walletAddress}"`);
     } else {
       console.error("Wallet address is undefined");
-      router.push('/signup');
+      router.push("/signup");
     }
   };
 
@@ -122,10 +124,7 @@ export default function VerifyOTP() {
             <p className="text-lg font-medium">Your OTP:</p>
             <div className="flex items-center justify-between mt-2">
               <span className="text-2xl font-bold">{otp}</span>
-              <button
-                onClick={copyToClipboard}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
+              <button onClick={copyToClipboard} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                 Copy to Clipboard
               </button>
             </div>
