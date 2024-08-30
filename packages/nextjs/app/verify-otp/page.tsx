@@ -21,7 +21,7 @@ export default function VerifyOTP() {
     if (effectRan.current === false) {
       const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
       setOtp(`C8D7M 1 ${randomOTP}`);
-      fetch(`/api/user/verify?otp=${randomOTP}&method=1`).then((response)=>{
+      fetch(`/api/user/verify?otp=${randomOTP}&method=1&phoneNumber=${searchParams.get('phone')}`).then((response)=>{
         if (!response.ok) {
           alert("There is some issue. Please restart the process");
           router.push('/signup');

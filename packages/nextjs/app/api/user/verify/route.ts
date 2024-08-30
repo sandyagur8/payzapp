@@ -11,6 +11,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<VerifyResp
   try {
     const url = new URL(request.url);
     const otp = url.searchParams.get('otp');
+    const phoneNumber = url.searchParams.get('number');
     const method = url.searchParams.get('method');
 
     if (!otp) {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<VerifyResp
       // Update OTP in the database
       const { error } = await supabase
         .from('verification')
-        .insert({ otp, isVerified: false });
+        .insert({ otp, isVerified: false ,phoneNumber});
 
       if (error) throw error;
 
