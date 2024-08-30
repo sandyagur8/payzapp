@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { email, walletAddress, phoneNumber, isMerchant } = body;
+  const { email, walletAddress, phoneNumber, isMerchant,name } = body;
 
   if (!email || !walletAddress || !phoneNumber) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -13,14 +13,14 @@ export async function POST(request: NextRequest) {
   try {
     const { data, error } = await supabase
       .from('users')
-      .upsert(
+      .insert(
         { 
           email, 
           wallet_address: walletAddress, 
           phone_number: phoneNumber, 
-          is_merchant: isMerchant 
-        },
-        { onConflict: 'email' }
+          is_merchant: isMerchant ,
+          name
+        }
       )
       .select();
 

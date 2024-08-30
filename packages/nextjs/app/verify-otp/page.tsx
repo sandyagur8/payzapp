@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect ,useRef} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
 
@@ -9,6 +9,7 @@ export default function VerifyOTP() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo>();
+  const effectRan = useRef(false);
   
   const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS
   if(!appAddress)
@@ -17,14 +18,20 @@ export default function VerifyOTP() {
   const kintoSDK = createKintoSDK(appAddress);
 
   useEffect(() => {
-    const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setOtp(`C8D7M 1 ${randomOTP}`);
-    fetch(`/api/user/verify?otp=${randomOTP}&method=1`).then((response)=>{
-      if (!response.ok) {
-        alert("There is some issue. Please restart the process");
-        router.push('/signup');
-      }
-    });
+    if (effectRan.current === false) {
+      const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
+      setOtp(`C8D7M 1 ${randomOTP}`);
+      fetch(`/api/user/verify?otp=${randomOTP}&method=1`).then((response)=>{
+        if (!response.ok) {
+          alert("There is some issue. Please restart the process");
+          router.push('/signup');
+        }
+      });
+
+      return () => {
+        effectRan.current = true;
+      };
+    }
   }, [router]);
 
   const copyToClipboard = () => {
@@ -39,7 +46,9 @@ export default function VerifyOTP() {
 
   const handleVerify = async () => {
     try {
-      const response = await fetch(`/api/user/verify?otp=${otp}&method=2`);
+      console.log(otp.split(" ")[2])
+      const response = await fetch(`/api/user/verify?otp=${otp.split(" ")[2]}&method=2`);
+
       if (!response.ok) {
         throw new Error("Verification failed");
       }
@@ -48,6 +57,7 @@ export default function VerifyOTP() {
         await kintoSDK.createNewWallet();
         const newAccountInfo = await kintoSDK.connect();
         setAccountInfo(newAccountInfo);
+        console.log({newAccountInfo})
         if (newAccountInfo) {
           const userData = {
             email: searchParams.get('email'),
@@ -56,6 +66,7 @@ export default function VerifyOTP() {
             isMerchant: searchParams.get('isMerchant'),
             walletAddress: newAccountInfo.walletAddress   
           };
+          console.log({userData})
           const createResponse = await fetch("/api/user/create", {
             method: 'POST',
             headers: {
@@ -63,6 +74,7 @@ export default function VerifyOTP() {
             },
             body: JSON.stringify(userData)
           });
+          console.log({createResponse})
           if (!createResponse.ok) {
             throw new Error("Failed to create user");
           }
@@ -81,7 +93,7 @@ export default function VerifyOTP() {
   const handleCloseModal = () => {
     setShowSuccessModal(false);
     if (accountInfo?.walletAddress) {
-      router.push(`/wallet?address=${accountInfo.walletAddress}`);
+      router.push(`/wallet?accountInfo="${accountInfo.walletAddress}"`);
     } else {
       console.error("Wallet address is undefined");
       router.push('/signup');
