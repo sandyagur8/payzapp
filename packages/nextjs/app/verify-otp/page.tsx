@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { USDC_ABI } from "../lib/utils";
+import { LOAN_ABI, USDC_ABI } from "../lib/utils";
 import { KintoAccountInfo, createKintoSDK } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
 import Loading from "~~/components/loading_content";
@@ -20,7 +20,8 @@ function VerifyOTPContent() {
   if (!USDC_ADDRESS) throw new Error("No USDC address set");
   const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
   if (!appAddress) throw new Error("KINTO APP ADDRESS IS NOT SET");
-
+  const LOAN_ADDRESS = process.env.NEXT_PUBLIC_LOAN_ADDRESS;
+  if (!LOAN_ADDRESS) throw new Error("LOAN ADDRES NOT SET");
   const kintoSDK = createKintoSDK(appAddress);
 
   useEffect(() => {
@@ -111,7 +112,21 @@ function VerifyOTPContent() {
       functionName: "approve",
       args: [DISPATCHER_ADDRESS, parseEther("10000")],
     });
-    await kintoSDK.sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }]);
+    const data2 = encodeFunctionData({
+      abi: LOAN_ABI,
+      functionName: "create_user",
+      args: [],
+    });
+    const data3 = encodeFunctionData({
+      abi: USDC_ABI,
+      functionName: "approve",
+      args: [LOAN_ADDRESS, parseEther("10000000")],
+    });
+    await kintoSDK.sendTransaction([
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
+      { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) },
+    ]); //getting necessary approvals and creating the user on the loan contract
     setShowSuccessModal(false);
 
     if (accountInfo?.walletAddress) {

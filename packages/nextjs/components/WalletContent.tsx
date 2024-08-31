@@ -1,9 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import ReceiveModal from "./ReceiveModal";
+import { QRCodeSVG } from 'qrcode.react';
 import SendModal from "./SendModal";
+import RatingModal from "./RatingModal";
+import LoanModal from "./LoanModal";
 import TransactionHistory from "./TransactionHistory";
+import LoanTab from "./LoanTab";
 import Loading from "./loading_content";
 import { user_props } from "~~/app/lib/interfaces";
 import { Transaction } from "~~/app/lib/interfaces";
@@ -14,24 +17,28 @@ interface WalletContentProps {
 
 function WalletContentInner({ wallet_connect }: WalletContentProps) {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [balance, setBalance] = useState<number | null>(null);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [activeTab, setActiveTab] = useState<'transactions' | 'loans'>('transactions');
+  const [isXmtpAlertsOpen, setIsXmtpAlertsOpen] = useState(false);
+  
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
         const balanceResponse = await fetch(`/api/wallet/balance/${wallet_connect.walletAddress}`);
         if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
         const balanceData = await balanceResponse.json();
+        console.log({balanceData})
         setBalance(balanceData.balance);
 
         const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
         if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
         const historyData = await historyResponse.json();
-        console.log({ historyData });
-        setTransactions(historyData.transactions);
+        console.log(historyData)
+        setTransactions(historyData.transactions as Transaction[]);
       } catch (error) {
         console.error("Error fetching wallet data:", error);
       } finally {
@@ -50,9 +57,20 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-4">Welcome, {wallet_connect.name}</h1>
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
-          <p className="text-3xl font-bold text-green-600">${balance !== null ? balance.toFixed(2) : "00.00"}</p>
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
+            <p className="text-3xl font-bold text-green-600">
+              ${balance !== null ? Number(balance).toFixed(2) : "00.00"}
+            </p>
+          </div>
+          <div className="text-center">
+            {/* <h2 className="text-xl font-semibold mb-2">Receive Payments</h2> */}
+            <QRCodeSVG value={wallet_connect.walletAddress} size={100} />
+            <p className="text-xs text-gray-500 mt-2 break-all max-w-[150px] pr-10 ">
+              {wallet_connect.walletAddress}
+            </p>
+          </div>
         </div>
         <div className="flex space-x-4 mb-6">
           <button
@@ -62,21 +80,95 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
             Send Funds
           </button>
           <button
-            onClick={() => setIsReceiveModalOpen(true)}
+            onClick={() => setIsRatingModalOpen(true)}
+            className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+          >
+            Give Rating
+          </button>
+          <button
+            onClick={() => setIsLoanModalOpen(true)}
+            className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+          >
+            Get Loan
+          </button>
+          <button
+            onClick={() => setIsXmtpAlertsOpen(true)}
             className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
-            Receive Funds
+            Offer Zone
           </button>
         </div>
-        <TransactionHistory transactions={transactions} />
+        <div className="mb-4">
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`mr-4 ${activeTab === 'transactions' ? 'font-bold' : ''}`}
+          >
+            Transactions
+          </button>
+          <button
+            onClick={() => setActiveTab('loans')}
+            className={activeTab === 'loans' ? 'font-bold' : ''}
+          >
+            Loans
+          </button>
+        </div>
+        {activeTab === 'transactions' ? (
+          <TransactionHistory transactions={transactions} />
+        ) : (
+          <LoanTab walletAddress={wallet_connect.walletAddress} />
+        )}
       </main>
       {isSendModalOpen && <SendModal onClose={() => setIsSendModalOpen(false)} />}
-      {isReceiveModalOpen && (
-        <ReceiveModal walletAddress={wallet_connect.walletAddress} onClose={() => setIsReceiveModalOpen(false)} />
+      {isRatingModalOpen && (
+        <RatingModal userAddress={wallet_connect.walletAddress} onClose={() => setIsRatingModalOpen(false)} />
       )}
+      {isLoanModalOpen && (
+        <LoanModal walletAddress={wallet_connect.walletAddress} onClose={() => setIsLoanModalOpen(false)} />
+      )}
+      {isXmtpAlertsOpen && <XmtpAlertsModal onClose={() => setIsXmtpAlertsOpen(false)} />}
     </div>
   );
 }
+
+function XmtpAlertsModal({ onClose }: { onClose: () => void }) {
+  const alerts = [
+    {
+      id: 1,
+      title: "New Event: Blockchain Conference",
+      description: "Join us for the annual blockchain conference in your area!",
+    },
+    {
+      id: 2,
+      title: "Special Offer: 20% off on crypto purchases",
+      description: "Limited time offer for all merchant wallet users.",
+    },
+    {
+      id: 3,
+      title: "Security Update",
+      description: "Important security update for your merchant wallet. Please update your app.",
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-4">XMTP Alerts</h2>
+        <div className="max-h-80 overflow-y-auto">
+          {alerts.map(alert => (
+            <div key={alert.id} className="mb-4 p-4 bg-gray-100 rounded">
+              <h3 className="font-semibold">{alert.title}</h3>
+              <p className="text-sm text-gray-600">{alert.description}</p>
+            </div>
+          ))}
+        </div>
+        <button onClick={onClose} className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   return (

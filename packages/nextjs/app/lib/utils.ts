@@ -5,22 +5,335 @@ export const kinto = defineChain({
     name: 'Kinto',
     network: 'kinto',
     nativeCurrency: {
-      decimals: 18,
-      name: 'ETH',
-      symbol: 'ETH',
+        decimals: 18,
+        name: 'ETH',
+        symbol: 'ETH',
     },
     rpcUrls: {
-      default: {
-        http: ['https://rpc.kinto-rpc.com/'],
-        webSocket: ['wss://rpc.kinto.xyz/ws'],
-      },
+        default: {
+            http: ['https://rpc.kinto-rpc.com/'],
+            webSocket: ['wss://rpc.kinto.xyz/ws'],
+        },
     },
     blockExplorers: {
-      default: { name: 'Explorer', url: 'https://kintoscan.io' },
+        default: { name: 'Explorer', url: 'https://kintoscan.io' },
     },
-  });
+});
 
-  export const USDC_ABI =[
+export interface Loan {
+    id: string;
+    amount: number;
+    remainingAmount: number;
+    nextTenureDate: string;
+    remainingTenures: number;
+    tenureAmount: number;
+  }
+export const LOAN_ABI = [
+    {
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "_USDC_ADDRESS",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_KYC_VIEWER_ADDRESS",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "KYC_VIEWER_ADDRESS",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "contract IKYC"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "USDC_ADDRESS",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "address_to_user",
+        "inputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "credit_worthiness",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "credit_available",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "create_user",
+        "inputs": [],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "dispatchLoan",
+        "inputs": [
+            {
+                "name": "loanAmount",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "number_of_splits",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "get_credit_limit",
+        "inputs": [
+            {
+                "name": "user",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "get_loan_by_id",
+        "inputs": [
+            {
+                "name": "user",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "id",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "tuple",
+                "internalType": "struct Loan.loanDetails",
+                "components": [
+                    {
+                        "name": "amount",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "remaining_tenures",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "total_tenures",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "tenure_size",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "loan_taken_time",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "next_tenure_due",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "last_day_of_repayment",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ]
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "get_repayment_amount",
+        "inputs": [
+            {
+                "name": "repayer",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "loanId",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "repay_tenure",
+        "inputs": [
+            {
+                "name": "id",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "user_to_loan_mapping",
+        "inputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "remaining_tenures",
+                "type": "uint8",
+                "internalType": "uint8"
+            },
+            {
+                "name": "total_tenures",
+                "type": "uint8",
+                "internalType": "uint8"
+            },
+            {
+                "name": "tenure_size",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "loan_taken_time",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "next_tenure_due",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "last_day_of_repayment",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    }
+]
+
+export const IKYC_ABI = [
+    {
+        "type": "function",
+        "name": "isIndividual",
+        "inputs": [
+            {
+                "name": "_account",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "isKYC",
+        "inputs": [
+            {
+                "name": "_account",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "view"
+    }
+]
+export const USDC_ABI = [
     {
         "inputs": [],
         "stateMutability": "nonpayable",

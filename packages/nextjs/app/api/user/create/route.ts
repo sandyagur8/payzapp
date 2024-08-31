@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { supabase } from '../../../lib/supabase';
-
+import { generatePrivateKey,privateKeyToAccount } from 'viem/accounts';
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { email, walletAddress, phoneNumber, isMerchant,name } = body;
@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
   if (!email || !walletAddress || !phoneNumber) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
-
+   const privatekey = generatePrivateKey()
+   const address = privateKeyToAccount(privatekey)
   try {
     const { data, error } = await supabase
       .from('users')
@@ -19,7 +20,10 @@ export async function POST(request: NextRequest) {
           wallet_address: walletAddress, 
           phone_number: phoneNumber, 
           is_merchant: isMerchant ,
-          name
+          name,
+          EOA_privateKey:privatekey,
+          EOA_walletaddress:address
+
         }
       )
       .select();

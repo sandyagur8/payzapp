@@ -1,14 +1,14 @@
 import { Transaction } from "~~/app/lib/interfaces";
 
 interface TransactionHistoryProps {
-  transactions: Transaction[]; 
+  transactions?: Transaction[]; 
 }
 
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions }) => {
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
-      {transactions.length > 0 ? (
+      {transactions && transactions.length > 0 ? (
         <ul>
           {transactions.map((transaction) => (
             <li key={transaction.id} className="border-b py-2 last:border-b-0">

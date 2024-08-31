@@ -7,7 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Transaction, user_props } from "~~/app/lib/interfaces";
 
 interface WalletContentProps {
-  wallet_connect: user_props;
+  wallet_connect: user_props ;
 }
 
 const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
@@ -23,6 +23,7 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
         const balanceResponse = await fetch(`/api/wallet/balance?walletAddres=${wallet_connect.walletAddress}`);
         if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
         const balanceData = await balanceResponse.json();
+        console.log({balanceData})
         setBalance(balanceData.balance);
 
         const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
