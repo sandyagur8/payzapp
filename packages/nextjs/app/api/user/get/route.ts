@@ -25,12 +25,13 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (error.code === "PGRST116") {
+        console.log(error)
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
       throw error;
     }
 
-    const { email: userEmail, wallet_address, phone_number, is_merchant, name } = data;
+    const { email: userEmail, wallet_address, phone_number, is_merchant, name} = data;
     return NextResponse.json(
       {
         email: userEmail,

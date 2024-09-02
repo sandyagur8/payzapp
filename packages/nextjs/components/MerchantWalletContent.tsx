@@ -5,6 +5,7 @@ import SendModal from "./SendModal";
 import TransactionHistory from "./TransactionHistory";
 import { QRCodeSVG } from "qrcode.react";
 import { Transaction, user_props } from "~~/app/lib/interfaces";
+import { title } from "process";
 
 interface WalletContentProps {
   wallet_connect: user_props ;

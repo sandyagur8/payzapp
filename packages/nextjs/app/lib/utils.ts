@@ -1,4 +1,5 @@
 import { defineChain } from "viem";
+import { createClient } from "@redis/client";
 
 export const kinto = defineChain({
     id: 7887,
@@ -19,6 +20,22 @@ export const kinto = defineChain({
         default: { name: 'Explorer', url: 'https://kintoscan.io' },
     },
 });
+
+
+
+export const getRedisClient = async () => {
+  const client = createClient({
+    url: process.env.NEXT_PUBLIC_REDIS_CONNECTION_STRING,
+  });
+
+  client.on("error", (err) => {
+    console.log("tried setting the on state")
+    console.error("Redis client error:", err);
+  });
+
+  await client.connect();
+  return client;
+};
 
 export interface Loan {
     id: string;
