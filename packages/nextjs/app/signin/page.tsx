@@ -1,14 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createKintoSDK } from "kinto-web-sdk";
-
+import {kintoSDK} from "./../lib/utils"
 export default function SignIn() {
-  const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
-  if (!appAddress) {
-    throw new Error("NEXT_PUBLIC_KINTO_APP_ADDRESS is not defined");
-  }
-  const kintoSDK = createKintoSDK(appAddress);
+
   const router = useRouter();
 
   const handleClick = async () => {

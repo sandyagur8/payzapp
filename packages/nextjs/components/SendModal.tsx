@@ -3,17 +3,11 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { createKintoSDK } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
 import { user_props } from "~~/app/lib/interfaces";
 import { USDC_ABI } from "~~/app/lib/utils";
+import { kintoSDK } from "~~/app/lib/utils";
 
-const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
-if (!appAddress) {
-  throw new Error("KINTO_APP_ADDRESS is not defined");
-}
-
-const kintoSDK = createKintoSDK(appAddress);
 
 const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 

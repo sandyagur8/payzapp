@@ -3,10 +3,10 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LOAN_ABI, USDC_ABI } from "../lib/utils";
-import { KintoAccountInfo, createKintoSDK } from "kinto-web-sdk";
+import { KintoAccountInfo } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
 import Loading from "~~/components/loading_content";
-
+import { kintoSDK } from "../lib/utils";
 function VerifyOTPContent() {
   const [otp, setOtp] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -18,11 +18,8 @@ function VerifyOTPContent() {
   if (!DISPATCHER_ADDRESS) throw new Error("No Dispatcher address set");
   const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
   if (!USDC_ADDRESS) throw new Error("No USDC address set");
-  const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
-  if (!appAddress) throw new Error("KINTO APP ADDRESS IS NOT SET");
   const LOAN_ADDRESS = process.env.NEXT_PUBLIC_LOAN_ADDRESS;
   if (!LOAN_ADDRESS) throw new Error("LOAN ADDRES NOT SET");
-  const kintoSDK = createKintoSDK(appAddress);
 
   useEffect(() => {
     if (effectRan.current === false) {
@@ -125,7 +122,7 @@ function VerifyOTPContent() {
     await kintoSDK.sendTransaction([
       { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
       { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) },
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }
     ]); //getting necessary approvals and creating the user on the loan contract
     setShowSuccessModal(false);
 

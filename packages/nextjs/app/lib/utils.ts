@@ -1,5 +1,13 @@
 import { defineChain } from "viem";
 import { createClient } from "@redis/client";
+import { createKintoSDK } from "kinto-web-sdk";
+
+const appAddress = process.env.NEXT_PUBLIC_KINTO_APP_ADDRESS;
+if (!appAddress) {
+  throw new Error("NEXT_PUBLIC_KINTO_APP_ADDRESS is not defined");
+}
+
+export const kintoSDK= createKintoSDK(appAddress);
 
 export const kinto = defineChain({
     id: 7887,

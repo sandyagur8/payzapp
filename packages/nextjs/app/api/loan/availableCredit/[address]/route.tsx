@@ -17,6 +17,7 @@ async function getCredit(accountAddress: string) {
     args: [accountAddress],
   });
   const credit = formatUnits(data as bigint, 18);
+  console.log(credit)
   return credit;
 }
 

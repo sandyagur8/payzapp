@@ -16,7 +16,7 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
         const response = await fetch(`/api/loan/availableCredit/${walletAddress}`);
         if (!response.ok) throw new Error('Failed to fetch available credit');
         const data = await response.json();
-        setAvailableCredit(data.availableCredit);
+        setAvailableCredit((data.credit));
       } catch (error) {
         console.error('Error fetching available credit:', error);
       }
@@ -29,6 +29,7 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
     e.preventDefault();
     // Implement loan request logic here
     console.log('Loan requested:', { loanAmount, tenure });
+    
     // Close the modal after submission
     onClose();
   };
@@ -37,7 +38,7 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4">Get a Loan</h2>
-        <p className="mb-4">Available Credit: ${availableCredit.toFixed(2)}</p>
+        <p className="mb-4">Available Credit: ${availableCredit}</p>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="loanAmount" className="block mb-2">Loan Amount</label>

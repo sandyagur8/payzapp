@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { generatePrivateKey,privateKeyToAccount } from 'viem/accounts';
-import { Client } from "@xmtp/xmtp-js";
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { email, walletAddress, phoneNumber, isMerchant,name } = body;
@@ -13,8 +12,7 @@ export async function POST(request: NextRequest) {
    const privatekey = generatePrivateKey()
    const signer = privateKeyToAccount(privatekey)
    const address = signer.address
-   //@ts-ignore
-   const xmtp = await Client.create(signer, { env: "dev" });
+
    
   try {
     const { data, error } = await supabase
