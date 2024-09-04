@@ -49,10 +49,7 @@ contract Loan {
         uint256 credit_worthiness;
         uint256 credit_available;
     }
-/* 
-forge verify-contract 0x8208DFaEef51B4a8EaAe4d6Dbaa310F59F4881B2 src/SampleToken.sol:USDC --verifier-url 'https://api.routescan.io/v2/network/mainnet/evm/7887/etherscan' --etherscan-api-key "verifyContract" --num-of-optimizations 200 --compiler-version 0.8.24 --constructor-args $(cast abi-encode "constructor(address _USDC_ADDRESS, address _KYC_VIEWER_ADDRESS)" 0x8208DFaEef51B4a8EaAe4d6Dbaa310F59F4881B2 0x33F28C3a636B38683a38987100723f2e2d3d038e)
 
-*/
     constructor(address _USDC_ADDRESS, address _KYC_VIEWER_ADDRESS) {
         USDC_ADDRESS = _USDC_ADDRESS;
         KYC_VIEWER_ADDRESS = IKYC(_KYC_VIEWER_ADDRESS);
@@ -120,8 +117,8 @@ forge verify-contract 0x8208DFaEef51B4a8EaAe4d6Dbaa310F59F4881B2 src/SampleToken
 
     function create_user() public userDoesNotExist {
         address_to_user[msg.sender] = userDetails({
-            credit_worthiness: 200,
-            credit_available: 200
+            credit_worthiness: 200*10**18,
+            credit_available: 200*10**18
         });
     }
 

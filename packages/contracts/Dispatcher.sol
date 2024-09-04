@@ -10,12 +10,19 @@ interface IERC20{
 contract Dispatcher {
 
 address immutable public USDC_ADDRESS;
+address immutable public OWNER;
 
-constructor(address _USDC_ADDRESS){
+constructor(address _USDC_ADDRESS,address _OWNER){
+
 USDC_ADDRESS = _USDC_ADDRESS;
+OWNER = _OWNER;
 }
 
-function send(address from,address to,uint256 amount) external {
+modifier isOwner(){
+    require(msg.sender==OWNER,"Only Owner");
+    _;
+}
+function send(address from,address to,uint256 amount) external isOwner {
     IERC20(USDC_ADDRESS).transferFrom(from, to, amount);
 }
 

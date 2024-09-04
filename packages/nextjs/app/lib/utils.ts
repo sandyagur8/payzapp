@@ -9,6 +9,74 @@ if (!appAddress) {
 
 export const kintoSDK= createKintoSDK(appAddress);
 
+
+export const DISPATCHER_ABI=[
+    {
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "_USDC_ADDRESS",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_OWNER",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "OWNER",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "USDC_ADDRESS",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "send",
+        "inputs": [
+            {
+                "name": "from",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "to",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    }
+]
 export const kinto = defineChain({
     id: 7887,
     name: 'Kinto',
