@@ -6,7 +6,7 @@ import TransactionHistory from "./TransactionHistory";
 import { QRCodeSVG } from "qrcode.react";
 import { Transaction, user_props } from "~~/app/lib/interfaces";
 import { title } from "process";
-
+import Loading from "./loading_content";
 interface WalletContentProps {
   wallet_connect: user_props ;
 }
@@ -14,27 +14,29 @@ interface WalletContentProps {
 const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isXmtpAlertsOpen, setIsXmtpAlertsOpen] = useState(false);
-  const [balance, setBalance] = useState(0); // Example balance
+  const [balance, setBalance] = useState<number|null>(null); // Example balance
   const walletAddress = wallet_connect.walletAddress; // Replace with actual wallet address
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading,setIsLoading]=useState<boolean>(true)
 
   useEffect(() => {
     const fetchWalletData = async () => {
+      setIsLoading(true);
       try {
-        const balanceResponse = await fetch(`/api/wallet/balance?walletAddres=${wallet_connect.walletAddress}`);
+        const balanceResponse = await fetch(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
         if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
         const balanceData = await balanceResponse.json();
-        console.log({balanceData})
         setBalance(balanceData.balance);
 
         const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
         if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
         const historyData = await historyResponse.json();
         console.log({ historyData });
-        setTransactions(historyData.transactions);
+        setTransactions(historyData);
       } catch (error) {
         console.error("Error fetching wallet data:", error);
       } finally {
+        setIsLoading(false)
         console.log("done");
       }
     };
@@ -42,12 +44,12 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
     fetchWalletData();
   }, [wallet_connect.walletAddress]);
 
-  return (
+  return !isLoading ?(
     <div className="min-h-screen flex flex-col bg-gray-100">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
-          <p className="text-3xl font-bold text-green-600">${balance.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-green-600">${balance}</p>
         </div>
 
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
@@ -66,7 +68,7 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
           >
             Send
           </button>
-          <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Attest</button>
+          <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Push Promotion</button>
         </div>
 
         <TransactionHistory transactions={transactions} />
@@ -88,6 +90,10 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
 
       {isXmtpAlertsOpen && <XmtpAlertsModal onClose={() => setIsXmtpAlertsOpen(false)} />}
     </div>
+  ):(
+    <>
+      <Loading/>
+    </>
   );
 };
 
