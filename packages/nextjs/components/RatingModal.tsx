@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Transaction } from '~~/app/lib/interfaces';
 
 interface RatingModalProps {
   userAddress: string;
   onClose: () => void;
+  transactions:Transaction[]
 }
 
 interface Merchant {
@@ -10,18 +12,25 @@ interface Merchant {
   merchant_name: string;
 }
 
-const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose }) => {
+const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transactions}) => {
   const [unratedMerchants, setUnratedMerchants] = useState<Merchant[]>([]);
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [rating, setRating] = useState<number>(0);
 
   useEffect(() => {
+    const unrated_merchants:Merchant[]=[]
     const fetchUnratedMerchants = async () => {
       try {
-        const response = await fetch(`/api/ratings?userAddress=${userAddress}`);
-        if (!response.ok) throw new Error('Failed to fetch unrated merchants');
-        const data = await response.json();
-        setUnratedMerchants(data.unratedMerchants);
+        for (const transaction of transactions){
+          if(transaction.type=="sent" && transaction.to){
+            unrated_merchants.push({
+              merchant_address: transaction.to,
+              merchant_name:"Sandyagu R"
+            })
+          }
+        }
+        setUnratedMerchants(unrated_merchants)
+
       } catch (error) {
         console.error('Error fetching unrated merchants:', error);
       }
@@ -56,6 +65,10 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose }) => {
       console.error('Error submitting rating:', error);
     }
   };
+
+  const handleSubscribe =async()=>{
+    
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -97,6 +110,13 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose }) => {
               disabled={!selectedMerchant || rating === 0}
             >
               Submit Rating
+            </button>
+            <button
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4"
+              onClick={handleSubscribe}
+              disabled={!selectedMerchant || rating === 0}
+            >
+              Subscribe To Merchant
             </button>
           </>
         ) : (

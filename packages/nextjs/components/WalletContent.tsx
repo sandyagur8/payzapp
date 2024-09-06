@@ -28,7 +28,7 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        const balanceResponse = await fetch(`/api/wallet/balance/${wallet_connect.walletAddress}`);
+        const balanceResponse = await fetch(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
         if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
         const balanceData = await balanceResponse.json();
         console.log({balanceData})
@@ -38,7 +38,7 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
         if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
         const historyData = await historyResponse.json();
         console.log(historyData)
-        setTransactions(historyData.transactions as Transaction[]);
+        setTransactions(historyData as Transaction[]);
       } catch (error) {
         console.error("Error fetching wallet data:", error);
       } finally {
@@ -120,7 +120,7 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
       </main>
       {isSendModalOpen && <SendModal onClose={() => setIsSendModalOpen(false)} />}
       {isRatingModalOpen && (
-        <RatingModal userAddress={wallet_connect.walletAddress} onClose={() => setIsRatingModalOpen(false)} />
+        <RatingModal transactions={transactions} userAddress={wallet_connect.walletAddress} onClose={() => setIsRatingModalOpen(false)} />
       )}
       {isLoanModalOpen && (
         <LoanModal walletAddress={wallet_connect.walletAddress} onClose={() => setIsLoanModalOpen(false)} />
@@ -152,7 +152,7 @@ function XmtpAlertsModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">XMTP Alerts</h2>
+        <h2 className="text-2xl font-bold mb-4">View My Ratings</h2>
         <div className="max-h-80 overflow-y-auto">
           {alerts.map(alert => (
             <div key={alert.id} className="mb-4 p-4 bg-gray-100 rounded">
