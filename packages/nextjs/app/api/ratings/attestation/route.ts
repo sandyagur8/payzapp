@@ -12,18 +12,6 @@ const client = new SignProtocolClient(SpMode.OnChain, {
   account: account,
 });
 
-// async function createSchema(
-//   schema: Schema,
-//   options?: { getTxHash?: (txHash: `0x${string}`) => void }
-// ): Promise<SchemaResult>;
-
-// async function createAttestation(
-//   attestation: Attestation,
-//   options?: {
-//     delegationSignature?: string;
-//     getTxHash?: (txHash: `0x${string}`) => void;
-//   }
-// ): Promise<AttestationResult>;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
