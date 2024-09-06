@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-
+import { kintoSDK,LOAN_ABI } from '~~/app/lib/utils';
+import { encodeFunctionData, parseEther } from "viem";
+import axios from "axios"
+const LOAN_ADDRESS=process.env.NEXT_PUBLIC_LOAN_ADDRESS as `0x${string}`
+if(!LOAN_ADDRESS) throw new Error("LOAN_ADDRESS not set")
 interface LoanModalProps {
   walletAddress: string;
   onClose: () => void;
@@ -9,16 +13,20 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
   const [availableCredit, setAvailableCredit] = useState<number>(0);
   const [loanAmount, setLoanAmount] = useState<string>('');
   const [tenure, setTenure] = useState<string>('');
+  const [isLoading,setIsLoading]=useState<boolean>(true)
 
   useEffect(() => {
     const fetchAvailableCredit = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch(`/api/loan/availableCredit/${walletAddress}`);
-        if (!response.ok) throw new Error('Failed to fetch available credit');
-        const data = await response.json();
+        const response = await axios.get(`/api/loan/availableCredit/${walletAddress}`);
+        if (response.status!=200) throw new Error('Failed to fetch available credit');
+        const data = await response.data;
         setAvailableCredit((data.credit));
       } catch (error) {
         console.error('Error fetching available credit:', error);
+      }finally{
+        setIsLoading(false) 
       }
     };
 
@@ -28,13 +36,29 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Implement loan request logic here
+    await kintoSDK.createNewWallet()
+    const accountInfo=await kintoSDK.connect()
+    if(!accountInfo) throw new Error("No account")
+      const data = encodeFunctionData({
+        abi: LOAN_ABI,
+        functionName: "dispatchLoan",
+        args: [ parseEther(loanAmount),tenure]
+      });
+      console.log({data})
+      try{
+
+        await kintoSDK.sendTransaction([{to:LOAN_ADDRESS,data,value:BigInt(0)}])
+      }catch(E){console.log(E)}
+
     console.log('Loan requested:', { loanAmount, tenure });
-    
+    setTimeout(()=>{
+      console.log("Loan Done")
+    },5000)
     // Close the modal after submission
     onClose();
   };
 
-  return (
+  return !isLoading? (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4">Get a Loan</h2>
@@ -74,6 +98,13 @@ const LoanModal: React.FC<LoanModalProps> = ({ walletAddress, onClose }) => {
         </button>
       </div>
     </div>
+  ):(
+
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white p-8 rounded-lg max-w-md w-full">
+      <h2 className="text-2xl font-bold mb-4">Loading ...</h2>
+      </div>
+      </div>
   );
 };
 

@@ -10,7 +10,7 @@ import LoanTab from "./LoanTab";
 import Loading from "./loading_content";
 import { user_props } from "~~/app/lib/interfaces";
 import { Transaction } from "~~/app/lib/interfaces";
-
+import axios from "axios"
 interface WalletContentProps {
   wallet_connect: user_props;
 }
@@ -28,15 +28,15 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        const balanceResponse = await fetch(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
-        if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
-        const balanceData = await balanceResponse.json();
+        const balanceResponse = await axios.get(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
+        if (balanceResponse.status!=200) throw new Error("Failed to fetch balance");
+        const balanceData = await balanceResponse.data;
         console.log({balanceData})
         setBalance(balanceData.balance);
 
-        const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
-        if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
-        const historyData = await historyResponse.json();
+        const historyResponse = await axios.get(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
+        if (historyResponse.status!=200) throw new Error("Failed to fetch transaction history");
+        const historyData = await historyResponse.data;
         console.log(historyData)
         setTransactions(historyData as Transaction[]);
       } catch (error) {

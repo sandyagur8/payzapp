@@ -10,7 +10,7 @@ import Loading from "./loading_content";
 interface WalletContentProps {
   wallet_connect: user_props ;
 }
-
+import axios from "axios"
 const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isXmtpAlertsOpen, setIsXmtpAlertsOpen] = useState(false);
@@ -23,14 +23,14 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
     const fetchWalletData = async () => {
       setIsLoading(true);
       try {
-        const balanceResponse = await fetch(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
-        if (!balanceResponse.ok) throw new Error("Failed to fetch balance");
-        const balanceData = await balanceResponse.json();
+        const balanceResponse = await axios.get(`/api/wallet/balance2/${wallet_connect.walletAddress}`);
+        if (balanceResponse.status!=200) throw new Error("Failed to fetch balance");
+        const balanceData = await balanceResponse.data;
         setBalance(balanceData.balance);
 
-        const historyResponse = await fetch(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
-        if (!historyResponse.ok) throw new Error("Failed to fetch transaction history");
-        const historyData = await historyResponse.json();
+        const historyResponse = await axios.get(`/api/wallet/history?walletAddress=${wallet_connect.walletAddress}`);
+        if (historyResponse.status!=200) throw new Error("Failed to fetch transaction history");
+        const historyData =  historyResponse.data;
         console.log({ historyData });
         setTransactions(historyData);
       } catch (error) {

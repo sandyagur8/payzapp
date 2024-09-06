@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Transaction } from '~~/app/lib/interfaces';
-
+import axios from "axios"
 interface RatingModalProps {
   userAddress: string;
   onClose: () => void;
@@ -43,7 +43,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transac
     if (!selectedMerchant) return;
 
     try {
-      const response = await fetch('/api/ratings', {
+      const response = await axios.post('/api/ratings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transac
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to submit rating');
+      if (response.status!=200) throw new Error('Failed to submit rating');
 
       // Remove the rated merchant from the list
       setUnratedMerchants(unratedMerchants.filter(m => m.merchant_address !== selectedMerchant.merchant_address));

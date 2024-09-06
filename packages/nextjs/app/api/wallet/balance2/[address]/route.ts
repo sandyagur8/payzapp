@@ -3,7 +3,7 @@ import { kinto } from "../../../../lib/utils";
 import { USDC_ABI } from "../../../../lib/utils";
 import { Address, createPublicClient, http } from "viem";
 import { formatUnits } from "viem";
-
+import axios from "axios"
 const USDCAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
 interface TokenItem {
     token: {
@@ -24,16 +24,27 @@ interface TokenItem {
     value: bigint;
 }
 async function getBalance(accountAddress: string) {
-    const url = `https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/tokens?type=ERC-20`
+    // const url = `https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/tokens?type=ERC-20`
 
-    const response = await fetch(url)
+    const url =`https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/token-balances`
 
-    if (!response.ok)
+    const response = await axios.get(`https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/token-balances`, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Accept': 'application/json'
+    }
+    })
+    
+    if (!(response.status==200))
         return Error("Can't get balance")
 
-    const data = await response.json()
+    const data =  response.data
+    console.log(data)
 
-    for (const item of data.items) {
+    for (const item of data) {
         if ((item.token.address).toLowerCase() == USDCAddress?.toLowerCase()) {
             return formatUnits(item.value, 18)
         }

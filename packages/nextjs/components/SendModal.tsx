@@ -7,7 +7,7 @@ import { encodeFunctionData, parseEther } from "viem";
 import { user_props } from "~~/app/lib/interfaces";
 import { USDC_ABI } from "~~/app/lib/utils";
 import { kintoSDK } from "~~/app/lib/utils";
-
+import axios from "axios"
 
 const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
@@ -30,15 +30,18 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
       // Handle online transaction
       const response =
         walletAddress.slice(0, 2) == "0x"
-          ? await fetch(`/api/user/get?walletAddress=${walletAddress}`)
-          : await fetch(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
-      const userdata: user_props = await response.json();
+          ? await axios.get(`/api/user/get?walletAddress=${walletAddress}`)
+          : await axios.get(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
+      const userdata: user_props =  response.data;
+      console.log(userdata)
       const data = encodeFunctionData({
         abi: USDC_ABI,
         functionName: "transfer",
         args: [userdata.walletAddress, parseEther(amount)],
       });
-      await kintoSDK.connect();
+      await kintoSDK.createNewWallet()
+      const accountInfo=await kintoSDK.connect();
+      if (!accountInfo) throw new Error("sdk didnt connect")
 
       kintoSDK
         .sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])

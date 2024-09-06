@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { Client } from "@xmtp/xmtp-js";
 import { Wallet } from 'ethers';
-
+import axios from "axios"
 
 const SERVER_ADDRESS =process.env.NEXT_PUBLIC_XMTP_SERVER_ADDRESS || "http://localhost:3005"
 
@@ -17,14 +17,14 @@ export async function POST(request: NextRequest) {
   
   try {
     const body={address:walletAddress}
-    const response = await fetch(`${SERVER_ADDRESS}/subscribe`,{
+    const response = await axios.post(`${SERVER_ADDRESS}/subscribe`,{
       method:'POST',
       headers:{
         'Content-Type': 'application/json',
       },
       body:JSON.stringify(body)
     })
-    if (!response.ok)
+    if (response.status !=200)
       return NextResponse.json({success:false}, { status: 200 });
     else 
     

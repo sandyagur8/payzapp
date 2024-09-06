@@ -151,6 +151,7 @@ async function fetchLastMessageAndParse() {
         console.log(`Number: ${parsedMessage.number}`);
         console.log(`To Number: ${parsedMessage.to_number}`);
         console.log(`Amount: ${parsedMessage.amount}`);
+        // transaction 
         return{
           to:parsedMessage.to_number,
           amount:parsedMessage.amount

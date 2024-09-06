@@ -2,7 +2,7 @@ export const runtime = "edge";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { supabase } from "../../../lib/supabase";
-
+import axios from "axios"
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
     try {
         const url = `${SERVER_ADDRESS}/get?address=${walletAddress}`
         console.log(url)
-        const response = await fetch(url)
-        if (!response.ok){
+        const response = await axios.get(url)
+        if (response.status!=200){
             console.log(response)
             return NextResponse.json({ success: false }, { status: 400 })
 
         }
 
-        const data = await response.json()
+        const data = response.data
         console.log(data)
         return NextResponse.json(
             {
