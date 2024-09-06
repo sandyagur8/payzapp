@@ -42,7 +42,8 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
       await kintoSDK.createNewWallet()
       const accountInfo=await kintoSDK.connect();
       if (!accountInfo) throw new Error("sdk didnt connect")
-
+      console.log({data})
+    try{
       kintoSDK
         .sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
         .then(hash => {
@@ -51,7 +52,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
         .catch(error => {
           console.error("Transaction failed:", error);
         });
-
+      }catch(e){console.log(e)}
       console.log("Online transaction:", { walletAddress, amount });
       onClose();
     }

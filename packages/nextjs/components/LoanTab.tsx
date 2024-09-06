@@ -53,7 +53,8 @@ const LoanTab: React.FC<LoanTabProps> = ({ walletAddress }) => {
       functionName: "repay_tenure",
       args: [loanId],
     });
-    await kintoSDK.sendTransaction([{ to: LOAN_ADDRESS, data, value: BigInt(0) }]);
+    console.log({data})
+   try{ await kintoSDK.sendTransaction([{ to: LOAN_ADDRESS, data, value: BigInt(0) }]);}catch(e){console.log(e)}
     console.log("Repaying loan:", loanId);
   };
 
