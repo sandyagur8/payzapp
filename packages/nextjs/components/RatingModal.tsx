@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Transaction } from '~~/app/lib/interfaces';
+import axios from "axios";
 
 interface RatingModalProps {
   userAddress: string;
   onClose: () => void;
-  transactions:Transaction[]
+  transactions: Transaction[];
 }
 
 interface Merchant {
@@ -12,63 +13,76 @@ interface Merchant {
   merchant_name: string;
 }
 
-const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transactions}) => {
+const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose, transactions }) => {
   const [unratedMerchants, setUnratedMerchants] = useState<Merchant[]>([]);
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
 
   useEffect(() => {
-    const unrated_merchants:Merchant[]=[]
     const fetchUnratedMerchants = async () => {
       try {
-        for (const transaction of transactions){
-          if(transaction.type=="sent" && transaction.to){
+        const unrated_merchants: Merchant[] = [];
+        for (const transaction of transactions) {
+          if (transaction.type === "sent" && transaction.to) {
             unrated_merchants.push({
               merchant_address: transaction.to,
-              merchant_name:"Sandyagu R"
-            })
+              merchant_name: "Sandyagu R" // You might want to replace this with actual merchant names
+            });
           }
         }
-        setUnratedMerchants(unrated_merchants)
-
+        setUnratedMerchants(unrated_merchants);
       } catch (error) {
         console.error('Error fetching unrated merchants:', error);
       }
     };
 
     fetchUnratedMerchants();
-  }, [userAddress]);
+  }, [userAddress, transactions]);
 
   const handleSubmitRating = async () => {
     if (!selectedMerchant) return;
 
     try {
-      const response = await fetch('/api/ratings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userAddress,
-          merchantAddress: selectedMerchant.merchant_address,
-          rating,
-        }),
+      const response = await axios.post('/api/ratings', {
+        userAddress,
+        merchantAddress: selectedMerchant.merchant_address,
+        rating,
+        comment,
       });
 
-      if (!response.ok) throw new Error('Failed to submit rating');
+      if (response.status !== 200) throw new Error('Failed to submit rating');
 
       // Remove the rated merchant from the list
       setUnratedMerchants(unratedMerchants.filter(m => m.merchant_address !== selectedMerchant.merchant_address));
       setSelectedMerchant(null);
       setRating(0);
+      setComment('');
     } catch (error) {
       console.error('Error submitting rating:', error);
     }
   };
 
-  const handleSubscribe =async()=>{
-    
-  }
+  const handleSubscribe = async () => {
+    try {
+      const response = await axios.post('/api/xmtp/subscribe', {
+        walletAddress:userAddress,
+      });
+  // console.log(response)
+      if (response.status!== 200) throw new Error('Failed to subscribe');
+
+      onClose();
+    } catch (error) {
+      console.error('Error subscribing:', error);
+    }
+  };
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const input = e.target.value;
+    if (input.length <= 100) {
+      setComment(input);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -91,7 +105,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transac
             {selectedMerchant && (
               <div className="mb-4">
                 <p className="mb-2">Rate {selectedMerchant.merchant_name}:</p>
-                <div className="flex justify-center">
+                <div className="flex justify-center mb-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -101,6 +115,20 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose ,transac
                       ★
                     </button>
                   ))}
+                </div>
+                <div className="mt-4">
+                  <label htmlFor="comment" className="block mb-2 text-sm font-medium text-gray-900">
+                    Your comment (max 100 characters):
+                  </label>
+                  <textarea
+                    id="comment"
+                    rows={3}
+                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Write your comment here..."
+                    value={comment}
+                    onChange={handleCommentChange}
+                  ></textarea>
+                  <p className="text-sm text-gray-500 mt-1">{comment.length}/100 characters</p>
                 </div>
               </div>
             )}

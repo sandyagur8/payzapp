@@ -7,6 +7,7 @@ import { KintoAccountInfo } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
 import Loading from "~~/components/loading_content";
 import { kintoSDK } from "../lib/utils";
+import axios from "axios"
 function VerifyOTPContent() {
   const [otp, setOtp] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -25,8 +26,8 @@ function VerifyOTPContent() {
     if (effectRan.current === false) {
       const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
       setOtp(`C8D7M 1 ${randomOTP}`);
-      fetch(`/api/user/verify?otp=${randomOTP}&method=1&number=91${searchParams.get("phone")}`).then(response => {
-        if (!response.ok) {
+      axios.get(`/api/user/verify?otp=${randomOTP}&method=1&number=91${searchParams.get("phone")}`).then(response => {
+        if (response.status!=200) {
           alert("There is some issue. Please restart the process");
           router.push("/signup");
         }
@@ -52,14 +53,14 @@ function VerifyOTPContent() {
     try {
       console.log(otp.split(" ")[2]);
       console.log(searchParams.get("phone"));
-      const response = await fetch(
+      const response = await axios.get(
         `/api/user/verify?otp=${otp.split(" ")[2]}&method=2&number=91${searchParams.get("phone")}`,
       );
 
-      if (!response.ok) {
+      if (response.status !=200) {
         throw new Error("Verification failed");
       }
-      const data = await response.json();
+      const data =  response.data
       if (data.isVerified) {
         try {
           await kintoSDK.createNewWallet();
@@ -77,7 +78,7 @@ function VerifyOTPContent() {
               walletAddress: newAccountInfo.walletAddress,
             };
             console.log({ userData });
-            const createResponse = await fetch("/api/user/create", {
+            const createResponse = await axios.post("/api/user/create", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -85,7 +86,7 @@ function VerifyOTPContent() {
               body: JSON.stringify(userData),
             });
             console.log({ createResponse });
-            if (!createResponse.ok) {
+            if (createResponse.status!=200) {
               throw new Error("Failed to create user");
             }
             setShowSuccessModal(true);

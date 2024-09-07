@@ -6,7 +6,7 @@ import MerchantWalletContent from "../../components/MerchantWalletContent";
 import WalletContent from "../../components/WalletContent";
 import { user_props } from "../lib/interfaces";
 import Loading from "~~/components/loading_content";
-
+import axios from "axios"
 function WalletComponent() {
   const [isMerchant, setIsMerchant] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,14 +21,14 @@ function WalletComponent() {
         if (encodedAccountInfo) {
           const decodedAccountInfo = JSON.parse(decodeURIComponent(encodedAccountInfo));
           console.log({decodedAccountInfo});
-          const response = await fetch(`/api/user/get?walletAddress=${decodedAccountInfo}`);
+          const response = await axios.get(`/api/user/get?walletAddress=${decodedAccountInfo}`);
           console.log({ response });
 
-          if (!response.ok) {
+          if (response.status!=200) {
             throw new Error("Failed to fetch user type");
           }
 
-          const data = await response.json();
+          const data = await response.data
           setIsMerchant(data.isMerchant);
           setAccountInfo(data);
         } else {
