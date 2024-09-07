@@ -15,6 +15,11 @@ interface WalletContentProps {
   wallet_connect: user_props;
 }
 
+interface alerts{
+  id: number,
+  title: string,
+  content:string
+}
 function WalletContentInner({ wallet_connect }: WalletContentProps) {
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
@@ -125,41 +130,55 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
       {isLoanModalOpen && (
         <LoanModal walletAddress={wallet_connect.walletAddress} onClose={() => setIsLoanModalOpen(false)} />
       )}
-      {isXmtpAlertsOpen && <XmtpAlertsModal onClose={() => setIsXmtpAlertsOpen(false)} />}
+      {isXmtpAlertsOpen && <XmtpAlertsModal address={wallet_connect.walletAddress} onClose={() => setIsXmtpAlertsOpen(false)} />}
     </div>
   );
 }
 
-function XmtpAlertsModal({ onClose }: { onClose: () => void }) {
-  const alerts = [
-    {
-      id: 1,
-      title: "New Event: Blockchain Conference",
-      description: "Join us for the annual blockchain conference in your area!",
-    },
-    {
-      id: 2,
-      title: "Special Offer: 20% off on crypto purchases",
-      description: "Limited time offer for all merchant wallet users.",
-    },
-    {
-      id: 3,
-      title: "Security Update",
-      description: "Important security update for your merchant wallet. Please update your app.",
-    },
-  ];
+function XmtpAlertsModal({ onClose, address }: { onClose: () => void; address: string }) {
+  const [alerts, setAlerts] = useState<alerts[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`/api/xmtp/get?walletAddress=${address}`);
+        console.log(response)
+        setAlerts(response.data.data);
+      } catch (err) {
+        setError('Failed to fetch alerts');
+      } finally {
+        setTimeout(()=>{
+          setIsLoading(false);
+          setError(null);
+        },5000)
+      }
+    };
+
+    fetchAlerts();
+  }, [address]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">View My Ratings</h2>
+        <h2 className="text-2xl font-bold mb-4">Offer Zone</h2>
         <div className="max-h-80 overflow-y-auto">
-          {alerts.map(alert => (
-            <div key={alert.id} className="mb-4 p-4 bg-gray-100 rounded">
-              <h3 className="font-semibold">{alert.title}</h3>
-              <p className="text-sm text-gray-600">{alert.description}</p>
-            </div>
-          ))}
+          {isLoading ? (
+            <div className="text-center">Loading...</div>
+          ) : error ? (
+            <div className="text-red-500">{error}</div>
+          ) : alerts.length > 0 ? (
+            alerts.map(alert => (
+              <div key={alert.id} className="mb-4 p-4 bg-gray-100 rounded">
+                <h3 className="font-semibold">New offer </h3>
+                <p className="text-sm text-gray-600">{alert.content}</p>
+              </div>
+            ))
+          ) : (
+            <div>No alerts available</div>
+          )}
         </div>
         <button onClick={onClose} className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Close
@@ -168,7 +187,6 @@ function XmtpAlertsModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
 
 const WalletContent: React.FC<WalletContentProps> = ({ wallet_connect }) => {
   return (

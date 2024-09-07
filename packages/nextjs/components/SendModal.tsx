@@ -3,11 +3,11 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { encodeFunctionData, parseEther } from "viem";
 import { user_props } from "~~/app/lib/interfaces";
 import { USDC_ABI } from "~~/app/lib/utils";
 import { kintoSDK } from "~~/app/lib/utils";
-import axios from "axios"
 
 const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
@@ -32,27 +32,46 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
         walletAddress.slice(0, 2) == "0x"
           ? await axios.get(`/api/user/get?walletAddress=${walletAddress}`)
           : await axios.get(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
-      const userdata: user_props =  response.data;
-      console.log(userdata)
+      const userdata: user_props = response.data;
+      console.log(userdata);
       const data = encodeFunctionData({
         abi: USDC_ABI,
         functionName: "transfer",
         args: [userdata.walletAddress, parseEther(amount)],
       });
-      await kintoSDK.createNewWallet()
-      const accountInfo=await kintoSDK.connect();
-      if (!accountInfo) throw new Error("sdk didnt connect")
-      console.log({data})
-    try{
-      kintoSDK
-        .sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
-        .then(hash => {
-          console.log("Transaction successful, hash:", hash);
-        })
-        .catch(error => {
-          console.error("Transaction failed:", error);
+      console.log({ data });
+      await kintoSDK.createNewWallet();
+      
+      const accountInfo = await kintoSDK.connect();
+      if (!accountInfo) throw new Error("sdk didnt connect");
+      console.log({accountInfo})
+      try {
+        kintoSDK
+          .sendTransaction([{ to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
+          .then(async(hash) => {
+            console.log("Transaction successful, hash:", hash);
+            await axios.post("/api/wallet/updateHistory", {
+              method: "POST",
+              body: JSON.stringify({
+                from: accountInfo.walletAddress,
+                to: userdata.walletAddress,
+                amount: amount})
+          })})
+          .catch(error => {
+            console.error("Transaction failed:", error);
+          });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        await axios.post("/api/wallet/updateHistory", {
+          method: "POST",
+          body: ({
+            from: accountInfo.walletAddress,
+            to: userdata.walletAddress,
+            amount: amount,
+          }),
         });
-      }catch(e){console.log(e)}
+      }
       console.log("Online transaction:", { walletAddress, amount });
       onClose();
     }

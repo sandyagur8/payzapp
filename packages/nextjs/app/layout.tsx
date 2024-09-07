@@ -25,7 +25,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
       </head>
       <body>
         <ThemeProvider enableSystem>
-          <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
+        {children}
         </ThemeProvider>
       </body>
     </html>

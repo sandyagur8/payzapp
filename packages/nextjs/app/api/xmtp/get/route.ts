@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         }
 
         const data = response.data
-        console.log(data)
+        console.log(data.messages)
         return NextResponse.json(
             {
                 data: data.messages

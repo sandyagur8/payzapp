@@ -7,7 +7,7 @@ const app = express();
 const PORT = 3005;
 const supabase_url = "https://vfxfcdlgnqcoeaohyqlv.supabase.co/"
 const supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeGZjZGxnbnFjb2Vhb2h5cWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2OTYwOTMsImV4cCI6MjA0MDI3MjA5M30.YPSDzisgs9O7xlas2Oer_T_fzcVzDCbEjj1virVPqMI"
-
+const bot_address = "0x79C00806C60eF8efC2f70070Da3C9Eff356a3CF1" //change this
 const supabase = createClient(supabase_url, supabase_key)
 
 app.use(cors());
@@ -23,16 +23,47 @@ const processAddress_post = async (address) => {
   console.log("PrivateKey  :", data[0].EOA_privateKey)
   const wallet = new Wallet(data[0].EOA_privateKey)
   const xmtp = await Client.create(wallet, { env: "production" })
+
   const existingChats = await xmtp.conversations.list()
+  let new_user=true;
   for (const conversation of existingChats) {
-    if (conversation.peerAddress == "0x79C00806C60eF8efC2f70070Da3C9Eff356a3CF1")
+    if (conversation.peerAddress == bot_address){
       conversation.send("subscribe")
+      new_user=false;
+    }
+  }
+  if (new_user){
+    const new_conv=await xmtp.conversations.newConversation(bot_address)
+    new_conv.send("Hii")
+    setTimeout(()=>{
+      console.log("First message sent")
+    },1000)
+    new_conv.send("subscribe")
   }
   return { success: true, message: "Address processed successfully!" };
 }
 catch(e){console.log(e)}
 };
 
+
+const processAddress_broadcast = async (address) => {
+  console.log("Address recieved:", address);
+  try{
+  const { data, error } = await supabase.from("users").select("EOA_privateKey").eq("wallet_address", address)
+  if (error & !(data[0].length > 0))
+    return new Error.message("wallet_address not found")
+  console.log("PrivateKey  :", data[0].EOA_privateKey)
+  const wallet = new Wallet(data[0].EOA_privateKey)
+  const xmtp = await Client.create(wallet, { env: "production" })
+  const existingChats = await xmtp.conversations.list()
+  for (const conversation of existingChats) {
+    if (conversation.peerAddress == bot_address)
+      conversation.send("broadcast")
+  }
+  return { success: true, message: "Address processed successfully!" };
+}
+catch(e){console.log(e)}
+};
 const processAddress_get = async (address) => {
   console.log("Address received:", address);
   try {
@@ -45,7 +76,7 @@ const processAddress_get = async (address) => {
     const xmtp = await Client.create(wallet, { env: "production" });
     const existingChats = await xmtp.conversations.list();
     for (const conversation of existingChats) {
-      if (conversation.peerAddress === "0x79C00806C60eF8efC2f70070Da3C9Eff356a3CF1") {
+      if (conversation.peerAddress === bot_address) {
         const messages = await conversation.messages();
         
 
@@ -53,7 +84,7 @@ const processAddress_get = async (address) => {
           .filter(msg => msg.content != null && msg.content !== '')
           .map(msg => ({
             id: msg.id,
-            date: msg.sent.toISOString(), // Convert to ISO string format
+            date: msg.sent.toISOString(), 
             content: msg.content
           }));
 
@@ -94,6 +125,18 @@ app.post('/subscribe', async (req, res) => {
   }
 
   const result = await processAddress_post(address);
+
+  res.json(result);
+});
+
+app.post('/broadcast', async (req, res) => {
+  const address = req.body.address; // Address from body
+
+  if (!address) {
+    return res.status(400).json({ success: false, message: "Address is required." });
+  }
+
+  const result = await processAddress_broadcast(address);
 
   res.json(result);
 });

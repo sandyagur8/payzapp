@@ -32,7 +32,7 @@ function validateAmount(amount: unknown): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-
+  console.log(body)
     // Validate input
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ message: 'Invalid request body' }, { status: 400 })
