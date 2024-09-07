@@ -28,18 +28,28 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
       router.push(`/offlineTransaction?phoneNumber=${phoneNumber}&amount=${amount}`);
     } else {
       // Handle online transaction
-      const response =
-        walletAddress.slice(0, 2) == "0x"
-          ? await axios.get(`/api/user/get?walletAddress=${walletAddress}`)
-          : await axios.get(`/api/user/get?phoneNumber=${walletAddress}`); // both phonenumber and wallet address are stored to the walletAddress state variable
+      let data=null;
+      let address=null
+      const isWalletAddress =walletAddress.slice(0, 2) == "0x";
+      if(isWalletAddress){
+        data = encodeFunctionData({
+          abi: USDC_ABI,
+          functionName: "transfer",
+          args: [walletAddress, parseEther(amount)],
+        });
+        address=walletAddress
+
+      }else{
+        const response =  await axios.get(`/api/user/get?phoneNumber=${walletAddress}`);
       const userdata: user_props = response.data;
-      console.log(userdata);
-      const data = encodeFunctionData({
+       data = encodeFunctionData({
         abi: USDC_ABI,
         functionName: "transfer",
         args: [userdata.walletAddress, parseEther(amount)],
       });
-      console.log({ data });
+      address=userdata.walletAddress
+      }
+
       await kintoSDK.createNewWallet();
       
       const accountInfo = await kintoSDK.connect();
@@ -54,7 +64,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
               method: "POST",
               body: {
                 from: accountInfo.walletAddress,
-                to: userdata.walletAddress,
+                to: address,
                 amount: amount}
           })})
           .catch(error => {
@@ -67,7 +77,7 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
           method: "POST",
           body: ({
             from: accountInfo.walletAddress,
-            to: userdata.walletAddress,
+            to: address,
             amount: amount,
           }),
         });

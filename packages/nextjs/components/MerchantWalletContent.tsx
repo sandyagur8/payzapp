@@ -168,7 +168,7 @@ function RatingsModal({ onClose, address }: { onClose: () => void; address: stri
             
             ))
           ) : (
-            <div>No alerts available</div>
+            <div>No reviews available</div>
           )}
         </div>
         <button onClick={onClose} className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -211,7 +211,7 @@ function XmtpAlertsModal({ onClose, address }: { onClose: () => void; address: s
         <h2 className="text-2xl font-bold mb-4">XMTP Message</h2>
         <div className="mb-4">
           <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-            Enter your message (max 100 characters):
+            Enter your Broadcast Title(max 100 characters):
           </label>
           <textarea
             id="message"
@@ -223,6 +223,9 @@ function XmtpAlertsModal({ onClose, address }: { onClose: () => void; address: s
               setError("");
             }}
           />
+         <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+            Enter Your Broadcast Message
+          </label>
             <textarea
             id="title"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"

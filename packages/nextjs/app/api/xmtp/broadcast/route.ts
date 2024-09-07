@@ -1,16 +1,15 @@
 export const runtime = "edge";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import axios from "axios"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     const SERVER_ADDRESS = process.env.NEXT_PUBLIC_XMTP_SERVER_ADDRESS || "http://localhost:3005"
     const ADMIN_ADDRESS = "0xdF79A13d5d6CCcA1D1a0e67Ecf1d1fB17658e80A"
 
     try {
-        const url = `${SERVER_ADDRESS}/broadcast?address=${ADMIN_ADDRESS}`
+        const url = `${SERVER_ADDRESS}/broadcast`
         console.log(url)
-        const response = await axios.get(url)
+        const response = await axios.post(url,{address:ADMIN_ADDRESS})
         if (response.status!=200){
             console.log(response)
             return NextResponse.json({ success: false }, { status: 400 })
