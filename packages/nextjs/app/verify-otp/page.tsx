@@ -83,7 +83,13 @@ function VerifyOTPContent() {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(userData),
+              body: {
+                email: searchParams.get("email"),
+                name: searchParams.get("name"),
+                phoneNumber: `91${searchParams.get("phone")}`,
+                isMerchant: searchParams.get("isMerchant"),
+                walletAddress: newAccountInfo.walletAddress,
+              },
             });
             console.log({ createResponse });
             if (createResponse.status!=200) {
@@ -121,10 +127,12 @@ function VerifyOTPContent() {
       args: [LOAN_ADDRESS, parseEther("10000000")],
     });
     await kintoSDK.sendTransaction([
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
-      { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }
-    ]); //getting necessary approvals and creating the user on the loan contract
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
+      await kintoSDK.sendTransaction([
+      { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) }])
+      await kintoSDK.sendTransaction([
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }])
+    //getting necessary approvals and creating the user on the loan contract
     setShowSuccessModal(false);
 
     if (accountInfo?.walletAddress) {

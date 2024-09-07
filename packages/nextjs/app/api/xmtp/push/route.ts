@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       .from('merchantData').upsert({
         "wallet_address":body.address,
         "broadcast_message": body.message,
+        "broadcast_title":body.title
       },{
         onConflict: 'wallet_address',
         ignoreDuplicates: false

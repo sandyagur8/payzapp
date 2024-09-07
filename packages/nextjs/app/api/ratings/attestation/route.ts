@@ -1,27 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { EvmChains, SignProtocolClient, SpMode,IndexService } from "@ethsign/sp-sdk";
+import { EvmChains, SignProtocolClient, SpMode, IndexService } from "@ethsign/sp-sdk";
 import { privateKeyToAccount } from "viem/accounts";
 import { decodeAbiParameters } from "viem";
 import { AttestationInfo } from "@ethsign/sp-sdk/dist/types/indexService";
-
-
-const privateKey = "0xe50a8044caa2310f92ee21fd616836f9bf023e384b8ac950e9bd29a676b02b82" as `0x${string}`;
-const account = privateKeyToAccount(privateKey);
-if (!account) throw new Error();
-//@ts-ignore
-const client = new SignProtocolClient(SpMode.OnChain, {
-  chain: EvmChains.baseSepolia,
-  account: account,
-});
+import { supabase } from "~~/app/lib/supabase";
 
 
 
+// async function getEOA(merchant_address: string) {
+//   const { data, error } = await supabase.from("users").select("EOA_privateKey").eq("wallet_address", merchant_address)
+//   if (error) {
+//     console.log(error)
+//     return null
+//   }
+//   console.log(data)
+
+//   return data[0].EOA_privateKey
+// }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { signerName, signerAddress, description, merchantaddress, rating } = body;
+  const { signerAddress, description, merchantaddress, rating } = body;
+  console.log(signerAddress)
+  console.log(description)
+  console.log(merchantaddress)
+  console.log(rating)
 
-  if (!signerName || !signerAddress || !description || !merchantaddress || !rating) {
+  if (!signerAddress || !description || !merchantaddress || !rating) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -32,8 +37,7 @@ export async function POST(request: NextRequest) {
       description,
       signerAddress,
       merchantaddress,
-      rating,
-    );
+      rating);
     if (attestationError) throw attestationError;
 
     return NextResponse.json({ success: true, attestationResult: result });
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  
+
 }
 
 async function createAttestation(
@@ -50,9 +54,18 @@ async function createAttestation(
   description: string,
   signer: string,
   merchant: string,
-  rating: number,
-) {
+  rating: number) {
   try {
+    // const EOA = await getEOA(merchant)
+    // console.log(EOA)
+    const account = privateKeyToAccount("0xae1c82de859407ab3d6f276ae4424b6230b1c2bef607a1e9d836619da064fea4");
+    if (!account) throw new Error();
+    //@ts-ignore
+    const client = new SignProtocolClient(SpMode.OnChain, {
+      chain: EvmChains.baseSepolia,
+      account: account,
+    });
+
     const result = await client.createAttestation({
       schemaId: schemaUID,
       data: {
@@ -71,22 +84,22 @@ async function createAttestation(
 
 const indexService = new IndexService("testnet");
 
-async function att(schemaId:string,attester:string,page:number,mode:string,indexingValue:string,id:string,) {
+async function att(schemaId: string, attester: string, page: number, mode: string, indexingValue: string, id: string,) {
   console.log("enter")
-  try{
-  const result = await indexService.queryAttestationList({
-    id: id,
-    schemaId: schemaId,
-    attester: attester,
-    page: page,
-    mode: "onchain",
-    indexingValue: indexingValue.toLowerCase(),
-  })
-  return {result};
-  }catch (error) {
+  try {
+    const result = await indexService.queryAttestationList({
+      id: id,
+      schemaId: schemaId,
+      attester: attester,
+      page: page,
+      mode: "onchain",
+      indexingValue: indexingValue.toLowerCase(),
+    })
+    return { result };
+  } catch (error) {
     return { error };
   };
-  
+
 }
 
 // { "signerName":"Payzapp",
@@ -105,18 +118,23 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const attester = searchParams.get('attester') || '';
   const mode = searchParams.get('mode') || '';
-  const indexingValue = searchParams.get('indexingValue') || '';
+  const indexingValue = searchParams.get('address') || '';
   const id = searchParams.get('id') || '';
 
   try {
     // Query attestations
-    const { result, error: queryError } = await att(schemaId,attester,page,mode,indexingValue,id);
+    // const EOA = await getEOA(indexingValue)
+    // console.log(EOA)
+    // const account = privateKeyToAccount(EOA)
+    // console.log(account.address)
+    const { result, error: queryError } = await att(schemaId, attester, page, mode, indexingValue, id);
+
 
     if (queryError) throw queryError;
-    // console.log(result?.rows)
-    const output =result?.rows
-    const found=decodeAttestations(output)
-    return NextResponse.json({ success: true, attestations: result });
+    console.log(result?.rows)
+    const output = result?.rows
+    const reviews = await decodeAttestations(output)
+    return NextResponse.json({ success: true, reviews });
   } catch (error) {
     console.error("Error in querying attestations:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -215,8 +233,9 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
   if (!attestations) return [];
 
   const result: any[] = [];
-
+  let count = 0;
   for (const att of attestations) {
+    count += 1
     if (!att.data) continue;
 
     let parsedData: any;
@@ -241,10 +260,9 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
         rating = parseInt(data[3].toString());
       } catch (error) {
         try {
-          const dataBuffer = Buffer.from(att.data, "hex");
           const data = decodeAbiParameters(
             att.dataLocation === "onchain" ? att.schema.data : [{ type: "string" }],
-            dataBuffer
+            att.data as `0x${string}`
           );
           const obj: any = {};
           data.forEach((item: any, i: number) => {
@@ -271,12 +289,13 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
 
     if (parsedData) {
       result.push({
+        id: count,
         review: parsedData,
         signer,
         rating
       });
     }
   }
-  // console.log(result)
+  console.log(result)
   return result;
 }

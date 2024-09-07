@@ -52,10 +52,10 @@ export default function SendModal({ onClose }: { onClose: () => void }) {
             console.log("Transaction successful, hash:", hash);
             await axios.post("/api/wallet/updateHistory", {
               method: "POST",
-              body: JSON.stringify({
+              body: {
                 from: accountInfo.walletAddress,
                 to: userdata.walletAddress,
-                amount: amount})
+                amount: amount}
           })})
           .catch(error => {
             console.error("Transaction failed:", error);
