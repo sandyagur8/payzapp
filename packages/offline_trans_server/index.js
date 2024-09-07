@@ -1,24 +1,14 @@
-// const app = require('./app');
-
-// const port = '8888';
-
-
-// app.listen(port, () => {
-//   console.log(`Server is listening on port ${port}...`);
-// });
-
 
 const { createClient } = require('@supabase/supabase-js');
 // Supabase setup
 const supabaseUrl = 'https://vfxfcdlgnqcoeaohyqlv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeGZjZGxnbnFjb2Vhb2h5cWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ2OTYwOTMsImV4cCI6MjA0MDI3MjA5M30.YPSDzisgs9O7xlas2Oer_T_fzcVzDCbEjj1virVPqMI';
 const supabase = createClient(supabaseUrl, supabaseKey);
-
+const {USDC_ABI,kinto,DISPATCHER_ABI,admin_privatekey,dispatcher_address,usdc_address}=require("./utils")
 const apiKey = encodeURIComponent('NDIzOTY4NmY3ODY3NjU3MjY1NzkzMTYxMzU2NzU3NzQ=');
-
-
-
-
+const {createPublicClient,http,parseEther,createWalletClient} = require("viem")
+const { privateKeyToAccount } = require('viem/accounts') 
+const account = privateKeyToAccount(admin_privatekey)
 
 // Function to fetch inboxes
 async function getInboxes() {
@@ -107,7 +97,40 @@ async function verifyOTP(otp, sender) {
   }
 }
 
+async function offline_transaction(sender,to_number,amount){
 
+  const {data:d1,error:e1}=await supabase.from("users").select("wallet_address").eq("phone_number",sender)
+  console.log(d1)
+  const from_address=d1[0].wallet_address
+  const {data:d2,error:e2}=await supabase.from("users").select("wallet_address").eq("phone_number",to_number)
+  console.log(d2)
+  const to_address=d2[0].wallet_address
+  console.log({from_address})
+  console.log({to_address})
+   const publicClient = createPublicClient({
+    chain: kinto,
+    transport: http()
+  })
+  const { request } = await publicClient.simulateContract({
+    account,
+    address: dispatcher_address,
+    abi: DISPATCHER_ABI,
+    functionName: 'send',
+    args:[from_address,to_address,parseEther(String(amount))]
+  })
+  const walletClient = createWalletClient({
+    chain: kinto,
+    account,
+    transport: http()
+  })
+  await walletClient.writeContract(request)
+console.log()
+await supabase.from("transactions").insert({from:from_address,to:to_address,amount:amount})
+
+}
+
+
+message_num =[]
 
 // Main function to fetch inboxes and then the last message from the first inbox
 async function fetchLastMessageAndParse() {
@@ -117,7 +140,7 @@ async function fetchLastMessageAndParse() {
       console.log('No inboxes found');
       return;
     }
-
+    
     const firstInboxId = inboxes[0].id;
     const lastMessage = ((await getLastMessage(firstInboxId)).msg);
     const from = ((await getLastMessage(firstInboxId)).from);
@@ -151,9 +174,16 @@ async function fetchLastMessageAndParse() {
         console.log(`Number: ${parsedMessage.number}`);
         console.log(`To Number: ${parsedMessage.to_number}`);
         console.log(`Amount: ${parsedMessage.amount}`);
-        return{
-          to:parsedMessage.to_number,
-          amount:parsedMessage.amount
+        if (!message_num.includes(inboxes[0].num_messages)) {
+          message_num.push(inboxes[0].num_messages);
+          await offline_transaction(Sender_info, parsedMessage.to_number, parsedMessage.amount);
+          return {
+            to: parsedMessage.to_number,
+            amount: parsedMessage.amount
+          };
+          } else {
+            console.log('Transaction already processed');
+            return null;
         };
       }
     } else {
