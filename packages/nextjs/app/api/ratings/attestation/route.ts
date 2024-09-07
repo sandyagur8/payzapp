@@ -3,7 +3,6 @@ import { EvmChains, SignProtocolClient, SpMode, IndexService } from "@ethsign/sp
 import { privateKeyToAccount } from "viem/accounts";
 import { decodeAbiParameters } from "viem";
 import { AttestationInfo } from "@ethsign/sp-sdk/dist/types/indexService";
-import { supabase } from "~~/app/lib/supabase";
 
 
 
@@ -98,8 +97,7 @@ async function att(schemaId: string, attester: string, page: number, mode: strin
     return { result };
   } catch (error) {
     return { error };
-  };
-
+  }
 }
 
 // { "signerName":"Payzapp",
@@ -240,7 +238,7 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
 
     let parsedData: any;
     let signer: string;
-    let merchant: string;
+    // let merchant: string;
     let rating: number;
 
     if (att.mode === "onchain") {
@@ -256,7 +254,7 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
         );
         parsedData = data[0];
         signer = data[1];
-        merchant = data[2];
+        // merchant = data[2];
         rating = parseInt(data[3].toString());
       } catch (error) {
         try {
@@ -270,7 +268,7 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
           });
           parsedData = obj;
           signer = obj.signer;
-          merchant = obj.merchant;
+          // merchant = obj.merchant;
           rating = parseInt(obj.rating.toString());
         } catch (error) {
           continue;
@@ -280,7 +278,6 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
       try {
         parsedData = JSON.parse(att.data);
         signer = parsedData.signer;
-        merchant = parsedData.merchant;
         rating = parseInt(parsedData.rating.toString());
       } catch (error) {
         continue;

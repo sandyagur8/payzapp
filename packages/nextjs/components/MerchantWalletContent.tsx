@@ -5,7 +5,6 @@ import SendModal from "./SendModal";
 import TransactionHistory from "./TransactionHistory";
 import Loading from "./loading_content";
 import axios from "axios";
-import { title } from "process";
 import { QRCodeSVG } from "qrcode.react";
 import { Transaction, user_props } from "~~/app/lib/interfaces";
 
