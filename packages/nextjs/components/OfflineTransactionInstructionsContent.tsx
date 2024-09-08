@@ -12,7 +12,7 @@ const OfflineTransactionInstructionsContent: React.FC<sentProps> = ({ amount, ph
   useEffect(() => {
     // Generate a random transaction code
     // const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const code = `C8D7M 2 ${phonenumber} ${amount}`
+    const code = `C8D7M 2 91${phonenumber} ${amount}`
 
     setTransactionCode(code);
   }, [amount,phonenumber]);

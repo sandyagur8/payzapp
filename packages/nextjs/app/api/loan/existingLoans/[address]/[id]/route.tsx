@@ -39,7 +39,7 @@ async function getLoan(accountAddress: string, id: number) {
     address: LoanAddres as Address,
     abi: LOAN_ABI,
     functionName: "get_loan_by_id",
-    args: [accountAddress, id],
+    args: [accountAddress, id]
   })as Resp
   console.log((data))
   if (!data ) {
@@ -73,30 +73,30 @@ export async function GET(request: NextRequest, { params }: { params: { address:
     const id = Number(params.id);
 
     if (!walletAddress) {
-      return NextResponse.json({ error: "Wallet address is required" }, { status: 400 });
+      return NextResponse.json({ error: "Wallet address is required" }, { status: 400 ,headers: { 'Cache-Control': 'no-store, max-age=0' }});
     }
 
     if (isNaN(id) || id < 0) {
-      return NextResponse.json({ error: "Invalid number of loans" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid number of loans" }, { status: 400,headers: { 'Cache-Control': 'no-store, max-age=0' } });
     }
 
     // Basic validation for wallet address format
     if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-      return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400,headers: { 'Cache-Control': 'no-store, max-age=0' } });
     }
 
     try {
       const loan = await getLoan(walletAddress, id);
       console.log(loan);
-      return NextResponse.json({ loan }, { status: 200 });
+      return NextResponse.json({ loan }, { status: 200 ,headers: { 'Cache-Control': 'no-store, max-age=0' }});
     } catch (e) {
       const responseData : Loan = {
         id:"0",amount:0,remainingAmount:0, nextTenureDate:"0", remainingTenures:0, tenureAmount:0
       }
-      return NextResponse.json({ data:responseData}, { status: 500 });
+      return NextResponse.json({ data:responseData}, { status: 500 ,headers: { 'Cache-Control': 'no-store, max-age=0' }});
     }
   } catch (error) {
     console.error("Error fetching balance:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 ,headers: { 'Cache-Control': 'no-store, max-age=0' }});
   }
 }

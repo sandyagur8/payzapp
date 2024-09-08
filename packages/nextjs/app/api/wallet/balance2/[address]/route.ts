@@ -1,34 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kinto } from "../../../../lib/utils";
-import { USDC_ABI } from "../../../../lib/utils";
-import { Address, createPublicClient, http } from "viem";
 import { formatUnits } from "viem";
 import axios from "axios"
 const USDCAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
-interface TokenItem {
-    token: {
-        address: string;
-        circulating_market_cap: number | null;
-        decimals: string;
-        exchange_rate: number | null;
-        holders: string;
-        icon_url: string | null;
-        name: string;
-        symbol: string;
-        total_supply: string;
-        type: string;
-        volume_24h: number | null;
-    };
-    token_id: string | null;
-    token_instance: string | null;
-    value: bigint;
-}
+// interface TokenItem {
+//     token: {
+//         address: string;
+//         circulating_market_cap: number | null;
+//         decimals: string;
+//         exchange_rate: number | null;
+//         holders: string;
+//         icon_url: string | null;
+//         name: string;
+//         symbol: string;
+//         total_supply: string;
+//         type: string;
+//         volume_24h: number | null;
+//     };
+//     token_id: string | null;
+//     token_instance: string | null;
+//     value: bigint;
+// }
 async function getBalance(accountAddress: string) {
     // const url = `https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/tokens?type=ERC-20`
 
     const url =`https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/token-balances`
 
-    const response = await axios.get(`https://explorer.kinto.xyz/api/v2/addresses/${accountAddress}/token-balances`, {
+    const response = await axios.get(url, {
       method: 'GET',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',

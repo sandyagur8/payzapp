@@ -3,11 +3,12 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LOAN_ABI, USDC_ABI } from "../lib/utils";
+import { kintoSDK } from "../lib/utils";
+import axios from "axios";
 import { KintoAccountInfo } from "kinto-web-sdk";
 import { encodeFunctionData, parseEther } from "viem";
 import Loading from "~~/components/loading_content";
-import { kintoSDK } from "../lib/utils";
-import axios from "axios"
+
 function VerifyOTPContent() {
   const [otp, setOtp] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -27,7 +28,7 @@ function VerifyOTPContent() {
       const randomOTP = Math.random().toString(36).substring(2, 8).toUpperCase();
       setOtp(`C8D7M 1 ${randomOTP}`);
       axios.get(`/api/user/verify?otp=${randomOTP}&method=1&number=91${searchParams.get("phone")}`).then(response => {
-        if (response.status!=200) {
+        if (response.status != 200) {
           alert("There is some issue. Please restart the process");
           router.push("/signup");
         }
@@ -57,10 +58,10 @@ function VerifyOTPContent() {
         `/api/user/verify?otp=${otp.split(" ")[2]}&method=2&number=91${searchParams.get("phone")}`,
       );
 
-      if (response.status !=200) {
+      if (response.status != 200) {
         throw new Error("Verification failed");
       }
-      const data =  response.data
+      const data = response.data;
       if (data.isVerified) {
         try {
           await kintoSDK.createNewWallet();
@@ -83,10 +84,16 @@ function VerifyOTPContent() {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(userData),
+              body: {
+                email: searchParams.get("email"),
+                name: searchParams.get("name"),
+                phoneNumber: `91${searchParams.get("phone")}`,
+                isMerchant: searchParams.get("isMerchant"),
+                walletAddress: newAccountInfo.walletAddress,
+              },
             });
             console.log({ createResponse });
-            if (createResponse.status!=200) {
+            if (createResponse.status != 200) {
               throw new Error("Failed to create user");
             }
             setShowSuccessModal(true);
@@ -120,11 +127,19 @@ function VerifyOTPContent() {
       functionName: "approve",
       args: [LOAN_ADDRESS, parseEther("10000000")],
     });
+    // await kintoSDK.sendTransaction([
+    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
+    //   await kintoSDK.sendTransaction([
+    //   { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) }])
+    //   await kintoSDK.sendTransaction([
+    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }]) // uncomment if needed
+
     await kintoSDK.sendTransaction([
       { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
       { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }
-    ]); //getting necessary approvals and creating the user on the loan contract
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data: data3, value: BigInt(0) },
+    ]);
+    //getting necessary approvals and creating the user on the loan contract
     setShowSuccessModal(false);
 
     if (accountInfo?.walletAddress) {

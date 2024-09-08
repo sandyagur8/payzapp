@@ -13,10 +13,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid request body' }, { status: 400 })
     }
     // Insert the new transaction
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('merchantData').upsert({
         "wallet_address":body.address,
         "broadcast_message": body.message,
+        "broadcast_title":body.title
       },{
         onConflict: 'wallet_address',
         ignoreDuplicates: false

@@ -44,12 +44,7 @@ const RatingModal: React.FC<RatingModalProps> = ({ userAddress, onClose, transac
     if (!selectedMerchant) return;
 
     try {
-      const response = await axios.post('/api/ratings', {
-        userAddress,
-        merchantAddress: selectedMerchant.merchant_address,
-        rating,
-        comment,
-      });
+      const response = await axios.post('/api/ratings/attestation', { signerAddress:userAddress, description:comment, merchantaddress:selectedMerchant.merchant_address, rating:rating } );
 
       if (response.status !== 200) throw new Error('Failed to submit rating');
 
