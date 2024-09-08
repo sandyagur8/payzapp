@@ -151,7 +151,7 @@ function VerifyOTPContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col  from-blue-500 to-purple-600 ">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-4">Verify Your Phone Number</h2>

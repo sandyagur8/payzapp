@@ -47,7 +47,7 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
   }, [wallet_connect.walletAddress]);
 
   return !isLoading ? (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-[#001f3d] text-black">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
@@ -66,7 +66,7 @@ const MerchantWalletContent: React.FC<WalletContentProps> = ({ wallet_connect })
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setIsSendModalOpen(true)}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
           >
             Send
           </button>

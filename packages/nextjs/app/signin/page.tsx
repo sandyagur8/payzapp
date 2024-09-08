@@ -23,7 +23,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#001f3d] text-[#f2d16a]">
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
           <button

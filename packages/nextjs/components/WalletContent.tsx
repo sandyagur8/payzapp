@@ -59,9 +59,9 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-[#001f3d] text-black">
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Welcome, {wallet_connect.name}</h1>
+        <h1 className="text-2xl font-bold mb-4  text-yellow-400">Welcome, {wallet_connect.name}</h1>
         <div className="bg-white shadow-md rounded-lg p-6 mb-6 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
@@ -80,7 +80,8 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setIsSendModalOpen(true)}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+
           >
             Send Funds
           </button>
@@ -92,13 +93,15 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
           </button>
           <button
             onClick={() => setIsLoanModalOpen(true)}
-            className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+            className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+
           >
             Get Loan
           </button>
           <button
             onClick={() => setIsXmtpAlertsOpen(true)}
-            className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+
           >
             Offer Zone
           </button>
@@ -106,13 +109,13 @@ function WalletContentInner({ wallet_connect }: WalletContentProps) {
         <div className="mb-4">
           <button
             onClick={() => setActiveTab('transactions')}
-            className={`mr-4 ${activeTab === 'transactions' ? 'font-bold' : ''}`}
+            className={`mr-4 ${activeTab === 'transactions' ? 'font-bold text-yellow-500' : ' text-yellow-400'} `}
           >
             Transactions
           </button>
           <button
             onClick={() => setActiveTab('loans')}
-            className={activeTab === 'loans' ? 'font-bold' : ''}
+            className={activeTab === 'loans' ? 'font-bold  text-yellow-500' : 'text-yellow-400'}
           >
             Loans
           </button>
