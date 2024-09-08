@@ -55,9 +55,12 @@ async function createAttestation(
   merchant: string,
   rating: number) {
   try {
-    // const EOA = await getEOA(merchant)
+    const key =process.env.NEXT_PUBLIC_KEY as `0x${string}`
+    if(!key)
+      return Error("no key")
+        // const EOA = await getEOA(merchant)
     // console.log(EOA)
-    const account = privateKeyToAccount("0xae1c82de859407ab3d6f276ae4424b6230b1c2bef607a1e9d836619da064fea4");
+    const account = privateKeyToAccount(key);
     if (!account) throw new Error();
     //@ts-ignore
     const client = new SignProtocolClient(SpMode.OnChain, {
