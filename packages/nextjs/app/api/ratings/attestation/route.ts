@@ -277,6 +277,6 @@ async function decodeAttestations(attestations: AttestationInfo[] | undefined): 
       });
     }
   }
-  // console.log(result)
+  console.log(result)
   return result;
 }
