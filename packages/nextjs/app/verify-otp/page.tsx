@@ -127,18 +127,18 @@ function VerifyOTPContent() {
       functionName: "approve",
       args: [LOAN_ADDRESS, parseEther("10000000")],
     });
-    // await kintoSDK.sendTransaction([
-    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
-    //   await kintoSDK.sendTransaction([
-    //   { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) }])
-    //   await kintoSDK.sendTransaction([
-    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }]) // uncomment if needed
-
     await kintoSDK.sendTransaction([
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
-      { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
-      { to: `0x${USDC_ADDRESS.slice(2)}`, data: data3, value: BigInt(0) },
-    ]);
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) }])
+      await kintoSDK.sendTransaction([
+      { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) }])
+      await kintoSDK.sendTransaction([
+      { to: `0x${USDC_ADDRESS.slice(2)}`, data:data3, value: BigInt(0) }]) // uncomment if needed
+
+    // await kintoSDK.sendTransaction([
+    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data, value: BigInt(0) },
+    //   { to: `0x${LOAN_ADDRESS.slice(2)}`, data: data2, value: BigInt(0) },
+    //   { to: `0x${USDC_ADDRESS.slice(2)}`, data: data3, value: BigInt(0) },
+    // ]);
     //getting necessary approvals and creating the user on the loan contract
     setShowSuccessModal(false);
 
