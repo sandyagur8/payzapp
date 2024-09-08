@@ -29,7 +29,7 @@ const OfflineTransactionInstructionsContent: React.FC<sentProps> = ({ amount, ph
   
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-colbg-[#001f3d] text-[#f2d16a]">
       {/* <Header /> */}
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="bg-white shadow-md rounded-lg p-6">
